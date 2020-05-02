@@ -1,5 +1,7 @@
 # tfd: tensorflow for D
 
+![CI](https://github.com/ShigekiKarita/tfd/workflows/CI/badge.svg)
+
 ## TODO
 
 - Setup CI

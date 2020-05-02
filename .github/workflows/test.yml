@@ -34,3 +34,7 @@ jobs:
       run: |
         source $(curl https://dlang.org/install.sh | bash -s -- ${{ matrix.compiler }} -a)
         make test
+
+    - name: codecov
+      if: ${{ matrix.compiler == 'dmd' }}
+      run: bash <(curl -s https://codecov.io/bash)

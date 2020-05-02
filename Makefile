@@ -40,5 +40,4 @@ clean:
 	rm -rfv generated
 
 test: all
-	LIBRARY_PATH=`pwd`/download/lib dub test --parallel
-
+	LIBRARY_PATH=`pwd`/download/lib dub test --parallel -b=unittest-cov
