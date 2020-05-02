@@ -1,6 +1,8 @@
 # tfd: tensorflow for D
 
 ![CI](https://github.com/ShigekiKarita/tfd/workflows/CI/badge.svg)
+[![codecov](https://codecov.io/gh/ShigekiKarita/tfd/branch/master/graph/badge.svg)](https://codecov.io/gh/ShigekiKarita/tfd)
+[![Dub version](https://img.shields.io/dub/v/tfd.svg)](https://code.dlang.org/packages/tfd)
 
 ## TODO
 
