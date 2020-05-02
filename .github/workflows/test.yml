@@ -17,7 +17,7 @@ jobs:
     - name: install
       run: |
         sudo apt-get update -qq
-        sudo apt-get install -qq -y gcc wget libprotobuf-dev libprotoc-dev libclang-6.0-dev
+        sudo apt-get install -qq -y gcc wget protobuf-compiler libprotobuf-dev libprotoc-dev libclang-6.0-dev
         sudo ln -sf /usr/lib/x86_64-linux-gnu/libclang-6.0.so /usr/lib/libclang.so
     - name: test
       run: |
