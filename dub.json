@@ -9,10 +9,9 @@
     "libs": ["tensorflow", "protobuf-c"],
     "lflags": ["-rpath-link=download/lib", "-rpath=download/lib"],
     "sourceFiles": ["generated/lib/libtensorflow_pb.a"],
-    "sourcePaths": ["source", "generated", "protobuf-d/src"],
-    "importPaths": ["source", "generated", "protobuf-d/src"],
+    "sourcePaths": ["source", "generated"],
+    "importPaths": ["source", "generated"],
 	"dependencies": {
-		"mir-algorithm": "~>3.7.28",
-        "protobuf:protoc-gen-d": { "path": "protobuf-d" }
+		"mir-algorithm": "~>3.7.28"
 	}
 }

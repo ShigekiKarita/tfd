@@ -13,4 +13,7 @@ echo "module ${dmodule};
 #include <${cfile}>" > ${dfile}pp
 
 # dub fetch dpp
-dub run dpp -- --preprocess-only --include-path ./download/include --include-path tensorflow/ ${dfile}pp
+dub run dpp -- --preprocess-only \
+  --include-path ./download/include \
+  --include-path ./generated \
+  --include-path tensorflow/ ${dfile}pp

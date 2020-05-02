@@ -1,6 +1,3 @@
-[submodule "protobuf-d"]
-	path = protobuf-d
-	url = https://github.com/dcarp/protobuf-d
 [submodule "tensorflow"]
 	path = tensorflow
 	url = https://github.com/tensorflow/tensorflow
