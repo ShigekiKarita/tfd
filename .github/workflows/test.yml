@@ -17,9 +17,9 @@ jobs:
     - name: install
       run: |
         sudo apt-get update -qq
-        sudo apt-get install -qq -y gcc libprotobuf-dev wget
+        sudo apt-get install -qq -y gcc wget libprotobuf-dev libprotoc-dev
     - name: test
       run: |
         source $(curl https://dlang.org/install.sh | bash -s -- ${{ matrix.compiler }} -a)
         dub fetch dpp
-        make test -j
+        make test
