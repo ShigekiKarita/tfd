@@ -97,25 +97,26 @@ TF_Tensor* empty(T, size_t N)(long[N] dims...)
       tfType!T, dimsPtr, N, T.sizeof * num_values);
 }
 
-/// Creates a tensor with dtype of T with values to copy.
-TF_Tensor* makeTensor(T, size_t N)(long[N] dims, const(T)* values) 
-{
-  import core.stdc.string : memcpy;
 
+/// Creates a tensor with dtype of T with values to copy.
+TF_Tensor* makeTensor(size_t N, SourceRange)(long[N] dims, SourceRange source) 
+{
+  import std.algorithm.mutation : copy;
+  import std.range.primitives : ElementType;
+
+  alias T = ElementType!SourceRange;
   TF_Tensor* t = empty!T(dims);
-  if (values) 
-  {
-    memcpy(TF_TensorData(t), values, T.sizeof * TF_TensorElementCount(t));
-  }
+  T[] target = (cast(T*) TF_TensorData(t))[0 .. TF_TensorElementCount(t)];
+  copy(source, target);
   return t;
 }
 
 
 /// Creates a tensor with a given scalar.
-TF_Tensor* makeTensor(T)(const(T) scalar)
+TF_Tensor* makeTensor(T)(T scalar)
 {
   long[0] dims;
-  return makeTensor!(T, 0)(dims, &scalar);
+  return makeTensor(dims, (&scalar)[0 .. 1]);
 }
 
 /// Make a scalar tensor;
