@@ -189,9 +189,11 @@ unittest
 }
 
 /// CAPI Session test in `tensorflow/c/c_api_test.c` with @nogc usage.
-@nogc
+@nogc nothrow
 unittest
 {
+  import std.typecons : tuple;
+
   import tfd.graph : Add, Placeholder, ScalarConst;
   import tfd.tensor : makeTensor;
 
@@ -217,16 +219,16 @@ unittest
   assertStatus(s);
 
   // run the graph.
-  import std.typecons : tuple;
-
   TF_Tensor* feedVal = makeTensor(3);
   scope (exit) TF_DeleteTensor(feedVal);
   session.setInputs(tuple(feed, feedVal));
   session.setOutputs(add);
+
   session.run(s);
   assertStatus(s);
   TF_Tensor* addVal = session.outputValues_[0];
   scope (exit) TF_DeleteTensor(addVal);
+
   assert(addVal !is null);
   assert(TF_TensorType(addVal) == TF_INT32);
   int* addInt = cast(int*) TF_TensorData(addVal);
