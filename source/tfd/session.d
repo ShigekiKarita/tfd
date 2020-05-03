@@ -21,32 +21,6 @@ private:
   Array!(TF_Tensor*) outputValues_;
   Array!(TF_Operation*) targets_;
 
-  @nogc nothrow @trusted
-  void deleteInputValues()
-  {
-    foreach (v; this.inputValues_) 
-    {
-      if (v)
-      {
-        TF_DeleteTensor(v);
-      }
-    }
-    this.inputValues_.clear();
-  }
-
-  @nogc nothrow @trusted
-  void deleteOutputValues()
-  {
-    foreach (v; this.outputValues_) 
-    {
-      if (v !is null)
-      {
-        TF_DeleteTensor(v);
-      }
-    }
-    outputValues_.clear();
-  }
-
 public:
 
   /// Constructs a new session.
@@ -75,8 +49,8 @@ public:
   @nogc nothrow @trusted
   void closeAndDelete(TF_Status* s) 
   {
-    this.deleteInputValues();
-    this.deleteOutputValues();
+    this.inputValues_.clear();
+    this.outputValues_.clear();
     if (session_ !is null) {
       TF_CloseSession(session_, s);
       assertStatus(s);
@@ -89,7 +63,7 @@ public:
   @nogc @trusted
   void setInputs(TF_Tensor*[TF_Operation*] inputs)
   {
-    this.deleteInputValues();
+    this.inputValues_.clear();
     this.inputs_.clear();
     this.inputs_.reserve(inputs.length);
     this.inputValues_.reserve(inputs.length);
@@ -104,7 +78,7 @@ public:
   @nogc nothrow @trusted
   void setInputs(size_t N)(Tuple!(TF_Operation*, TF_Tensor*)[N] inputs...)
   {
-    this.deleteInputValues();
+    this.inputValues_.clear();
     this.inputs_.clear();
     this.inputs_.reserve(inputs.length);
     this.inputValues_.reserve(inputs.length);
@@ -119,7 +93,7 @@ public:
   @nogc nothrow @trusted
   void setOutputs(size_t N)(TF_Operation*[N] outputs...)
   {
-    this.deleteOutputValues();
+    this.outputValues_.clear();
     this.outputs_.clear();
     this.outputs_.reserve(N);
     foreach (op; outputs)
@@ -135,31 +109,45 @@ public:
   {
     assert(this.inputs_.length == this.inputValues_.length,
           "Call setInputs() before run()");
-    this.deleteOutputValues();
+    scope (exit) this.inputValues_.clear();
     this.outputValues_.length = this.outputs_.length;
 
-    const inputs_ptr = inputs_.empty ? null : &inputs_[0];
-    auto input_values_ptr =
+    const inputsPtr = inputs_.empty ? null : &inputs_[0];
+    auto inputValuesPtr =
         inputValues_.empty ? null : &inputValues_[0];
 
-    const TF_Output* outputs_ptr = 
+    const TF_Output* outputsPtr = 
         outputs_.empty ? null : &outputs_[0];
-    TF_Tensor** outputValues_ptr =
+    TF_Tensor** outputValuesPtr =
         outputValues_.empty ? null : &outputValues_[0];
 
-    const targets_ptr = targets_.empty ? null : &targets_[0];
+    const targetsPtr = targets_.empty ? null : &targets_[0];
 
     TF_SessionRun(
         session_, null, 
-        inputs_ptr, input_values_ptr, cast(int) inputs_.length,
-        outputs_ptr, outputValues_ptr, cast(int) outputs_.length, 
-        targets_ptr, cast(int) targets_.length,
+        inputsPtr, inputValuesPtr, cast(int) inputs_.length,
+        outputsPtr, outputValuesPtr, cast(int) outputs_.length, 
+        targetsPtr, cast(int) targets_.length,
         null, s);
-    this.deleteInputValues();
+    assertStatus(s);
   }
 
-  /// Runs in python-like usage.
-
+  /// Runs in python-like usage.　
+  /// WARNING: you need to free the returned tensors by yourself.
+  TF_Tensor*[N] run(size_t N)(TF_Operation*[N] outputs, TF_Tensor*[TF_Operation*] inputs)
+  {
+    this.setInputs(inputs);
+    this.setOutputs(outputs);
+    auto s = TF_NewStatus();
+    scope (exit) TF_DeleteStatus(s);
+    this.run(s);
+    TF_Tensor*[N] ret;
+    foreach (i; 0 .. N)
+    {
+      ret[i] = this.outputValues_[i];
+    }
+    return ret;
+  }
 }
 
 /// CAPI Session test in `tensorflow/c/c_api_test.c`
@@ -190,15 +178,14 @@ unittest
   assertStatus(s);
 
   // run the graph.
-  session.setInputs([feed: makeTensor(3)]);
-  session.setOutputs(add);
-  session.run(s);
-  assertStatus(s);
-  TF_Tensor* result = session.outputValues_[0];
-  assert(result !is null);
-  assert(TF_TensorType(result) == TF_INT32);
-  int* resultVal = cast(int*) TF_TensorData(result);
-  assert(2 + 3 == *resultVal);
+  TF_Tensor* feedVal = makeTensor(3);
+  scope (exit) TF_DeleteTensor(feedVal);
+  TF_Tensor* addVal = session.run([add], [feed: feedVal])[0];
+  scope (exit) TF_DeleteTensor(addVal);
+
+  assert(TF_TensorType(addVal) == TF_INT32);
+  int* addInt = cast(int*) TF_TensorData(addVal);
+  assert(2 + 3 == *addInt);
 }
 
 /// CAPI Session test in `tensorflow/c/c_api_test.c` with @nogc usage.
@@ -231,13 +218,17 @@ unittest
 
   // run the graph.
   import std.typecons : tuple;
-  session.setInputs(tuple(feed, makeTensor(3)));
+
+  TF_Tensor* feedVal = makeTensor(3);
+  scope (exit) TF_DeleteTensor(feedVal);
+  session.setInputs(tuple(feed, feedVal));
   session.setOutputs(add);
   session.run(s);
   assertStatus(s);
-  TF_Tensor* result = session.outputValues_[0];
-  assert(result !is null);
-  assert(TF_TensorType(result) == TF_INT32);
-  int* resultVal = cast(int*) TF_TensorData(result);
-  assert(2 + 3 == *resultVal);
+  TF_Tensor* addVal = session.outputValues_[0];
+  scope (exit) TF_DeleteTensor(addVal);
+  assert(addVal !is null);
+  assert(TF_TensorType(addVal) == TF_INT32);
+  int* addInt = cast(int*) TF_TensorData(addVal);
+  assert(2 + 3 == *addInt);
 }
