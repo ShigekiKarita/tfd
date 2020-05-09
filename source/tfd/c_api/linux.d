@@ -1,5 +1,4 @@
-module tfd.c_api_linux;
-version (Linux):
+module tfd.c_api.linux_;
 
 
         import core.stdc.config;
@@ -53,6 +52,138 @@ struct dpp {
 
 extern(C)
 {
+    bool TF_TensorIsAligned(const(TF_Tensor)*) @nogc nothrow;
+    c_ulong TF_StringEncodedSize(c_ulong) @nogc nothrow;
+    c_ulong TF_StringDecode(const(char)*, c_ulong, const(char)**, c_ulong*, TF_Status*) @nogc nothrow;
+    c_ulong TF_StringEncode(const(char)*, c_ulong, char*, c_ulong, TF_Status*) @nogc nothrow;
+    void TF_TensorBitcastFrom(const(TF_Tensor)*, TF_DataType, TF_Tensor*, const(c_long)*, int, TF_Status*) @nogc nothrow;
+    c_long TF_TensorElementCount(const(TF_Tensor)*) @nogc nothrow;
+    void* TF_TensorData(const(TF_Tensor)*) @nogc nothrow;
+    c_ulong TF_TensorByteSize(const(TF_Tensor)*) @nogc nothrow;
+    c_long TF_Dim(const(TF_Tensor)*, int) @nogc nothrow;
+    int TF_NumDims(const(TF_Tensor)*) @nogc nothrow;
+    TF_DataType TF_TensorType(const(TF_Tensor)*) @nogc nothrow;
+    void TF_DeleteTensor(TF_Tensor*) @nogc nothrow;
+    TF_Tensor* TF_TensorMaybeMove(TF_Tensor*) @nogc nothrow;
+    TF_Tensor* TF_AllocateTensor(TF_DataType, const(c_long)*, int, c_ulong) @nogc nothrow;
+    TF_Tensor* TF_NewTensor(TF_DataType, const(c_long)*, int, void*, c_ulong, void function(void*, c_ulong, void*), void*) @nogc nothrow;
+    struct TF_Tensor;
+    const(char)* TF_Message(const(TF_Status)*) @nogc nothrow;
+    TF_Code TF_GetCode(const(TF_Status)*) @nogc nothrow;
+    void TF_SetStatus(TF_Status*, TF_Code, const(char)*) @nogc nothrow;
+    void TF_DeleteStatus(TF_Status*) @nogc nothrow;
+    TF_Status* TF_NewStatus() @nogc nothrow;
+    enum TF_Code
+    {
+        TF_OK = 0,
+        TF_CANCELLED = 1,
+        TF_UNKNOWN = 2,
+        TF_INVALID_ARGUMENT = 3,
+        TF_DEADLINE_EXCEEDED = 4,
+        TF_NOT_FOUND = 5,
+        TF_ALREADY_EXISTS = 6,
+        TF_PERMISSION_DENIED = 7,
+        TF_UNAUTHENTICATED = 16,
+        TF_RESOURCE_EXHAUSTED = 8,
+        TF_FAILED_PRECONDITION = 9,
+        TF_ABORTED = 10,
+        TF_OUT_OF_RANGE = 11,
+        TF_UNIMPLEMENTED = 12,
+        TF_INTERNAL = 13,
+        TF_UNAVAILABLE = 14,
+        TF_DATA_LOSS = 15,
+    }
+    enum TF_OK = TF_Code.TF_OK;
+    enum TF_CANCELLED = TF_Code.TF_CANCELLED;
+    enum TF_UNKNOWN = TF_Code.TF_UNKNOWN;
+    enum TF_INVALID_ARGUMENT = TF_Code.TF_INVALID_ARGUMENT;
+    enum TF_DEADLINE_EXCEEDED = TF_Code.TF_DEADLINE_EXCEEDED;
+    enum TF_NOT_FOUND = TF_Code.TF_NOT_FOUND;
+    enum TF_ALREADY_EXISTS = TF_Code.TF_ALREADY_EXISTS;
+    enum TF_PERMISSION_DENIED = TF_Code.TF_PERMISSION_DENIED;
+    enum TF_UNAUTHENTICATED = TF_Code.TF_UNAUTHENTICATED;
+    enum TF_RESOURCE_EXHAUSTED = TF_Code.TF_RESOURCE_EXHAUSTED;
+    enum TF_FAILED_PRECONDITION = TF_Code.TF_FAILED_PRECONDITION;
+    enum TF_ABORTED = TF_Code.TF_ABORTED;
+    enum TF_OUT_OF_RANGE = TF_Code.TF_OUT_OF_RANGE;
+    enum TF_UNIMPLEMENTED = TF_Code.TF_UNIMPLEMENTED;
+    enum TF_INTERNAL = TF_Code.TF_INTERNAL;
+    enum TF_UNAVAILABLE = TF_Code.TF_UNAVAILABLE;
+    enum TF_DATA_LOSS = TF_Code.TF_DATA_LOSS;
+    struct TF_Status;
+    c_ulong TF_DataTypeSize(TF_DataType) @nogc nothrow;
+    enum TF_DataType
+    {
+        TF_FLOAT = 1,
+        TF_DOUBLE = 2,
+        TF_INT32 = 3,
+        TF_UINT8 = 4,
+        TF_INT16 = 5,
+        TF_INT8 = 6,
+        TF_STRING = 7,
+        TF_COMPLEX64 = 8,
+        TF_COMPLEX = 8,
+        TF_INT64 = 9,
+        TF_BOOL = 10,
+        TF_QINT8 = 11,
+        TF_QUINT8 = 12,
+        TF_QINT32 = 13,
+        TF_BFLOAT16 = 14,
+        TF_QINT16 = 15,
+        TF_QUINT16 = 16,
+        TF_UINT16 = 17,
+        TF_COMPLEX128 = 18,
+        TF_HALF = 19,
+        TF_RESOURCE = 20,
+        TF_VARIANT = 21,
+        TF_UINT32 = 22,
+        TF_UINT64 = 23,
+    }
+    enum TF_FLOAT = TF_DataType.TF_FLOAT;
+    enum TF_DOUBLE = TF_DataType.TF_DOUBLE;
+    enum TF_INT32 = TF_DataType.TF_INT32;
+    enum TF_UINT8 = TF_DataType.TF_UINT8;
+    enum TF_INT16 = TF_DataType.TF_INT16;
+    enum TF_INT8 = TF_DataType.TF_INT8;
+    enum TF_STRING = TF_DataType.TF_STRING;
+    enum TF_COMPLEX64 = TF_DataType.TF_COMPLEX64;
+    enum TF_COMPLEX = TF_DataType.TF_COMPLEX;
+    enum TF_INT64 = TF_DataType.TF_INT64;
+    enum TF_BOOL = TF_DataType.TF_BOOL;
+    enum TF_QINT8 = TF_DataType.TF_QINT8;
+    enum TF_QUINT8 = TF_DataType.TF_QUINT8;
+    enum TF_QINT32 = TF_DataType.TF_QINT32;
+    enum TF_BFLOAT16 = TF_DataType.TF_BFLOAT16;
+    enum TF_QINT16 = TF_DataType.TF_QINT16;
+    enum TF_QUINT16 = TF_DataType.TF_QUINT16;
+    enum TF_UINT16 = TF_DataType.TF_UINT16;
+    enum TF_COMPLEX128 = TF_DataType.TF_COMPLEX128;
+    enum TF_HALF = TF_DataType.TF_HALF;
+    enum TF_RESOURCE = TF_DataType.TF_RESOURCE;
+    enum TF_VARIANT = TF_DataType.TF_VARIANT;
+    enum TF_UINT32 = TF_DataType.TF_UINT32;
+    enum TF_UINT64 = TF_DataType.TF_UINT64;
+    enum TF_AttrType
+    {
+        TF_ATTR_STRING = 0,
+        TF_ATTR_INT = 1,
+        TF_ATTR_FLOAT = 2,
+        TF_ATTR_BOOL = 3,
+        TF_ATTR_TYPE = 4,
+        TF_ATTR_SHAPE = 5,
+        TF_ATTR_TENSOR = 6,
+        TF_ATTR_PLACEHOLDER = 7,
+        TF_ATTR_FUNC = 8,
+    }
+    enum TF_ATTR_STRING = TF_AttrType.TF_ATTR_STRING;
+    enum TF_ATTR_INT = TF_AttrType.TF_ATTR_INT;
+    enum TF_ATTR_FLOAT = TF_AttrType.TF_ATTR_FLOAT;
+    enum TF_ATTR_BOOL = TF_AttrType.TF_ATTR_BOOL;
+    enum TF_ATTR_TYPE = TF_AttrType.TF_ATTR_TYPE;
+    enum TF_ATTR_SHAPE = TF_AttrType.TF_ATTR_SHAPE;
+    enum TF_ATTR_TENSOR = TF_AttrType.TF_ATTR_TENSOR;
+    enum TF_ATTR_PLACEHOLDER = TF_AttrType.TF_ATTR_PLACEHOLDER;
+    enum TF_ATTR_FUNC = TF_AttrType.TF_ATTR_FUNC;
     alias __sig_atomic_t = int;
     alias __socklen_t = uint;
     alias __intptr_t = c_long;
@@ -138,159 +269,6 @@ extern(C)
     alias int_least32_t = int;
     alias int_least16_t = short;
     alias int_least8_t = byte;
-    alias wchar_t = int;
-    alias size_t = c_ulong;
-    alias ptrdiff_t = c_long;
-    struct max_align_t
-    {
-        long __clang_max_align_nonce1;
-        real __clang_max_align_nonce2;
-    }
-    void TF_RegisterLogListener(void function(const(char)*)) @nogc nothrow;
-    void TF_DeleteServer(TF_Server*) @nogc nothrow;
-    const(char)* TF_ServerTarget(TF_Server*) @nogc nothrow;
-    void TF_ServerJoin(TF_Server*, TF_Status*) @nogc nothrow;
-    void TF_ServerStop(TF_Server*, TF_Status*) @nogc nothrow;
-    void TF_ServerStart(TF_Server*, TF_Status*) @nogc nothrow;
-    TF_Server* TF_NewServer(const(void)*, c_ulong, TF_Status*) @nogc nothrow;
-    struct TF_Server;
-    enum TF_AttrType
-    {
-        TF_ATTR_STRING = 0,
-        TF_ATTR_INT = 1,
-        TF_ATTR_FLOAT = 2,
-        TF_ATTR_BOOL = 3,
-        TF_ATTR_TYPE = 4,
-        TF_ATTR_SHAPE = 5,
-        TF_ATTR_TENSOR = 6,
-        TF_ATTR_PLACEHOLDER = 7,
-        TF_ATTR_FUNC = 8,
-    }
-    enum TF_ATTR_STRING = TF_AttrType.TF_ATTR_STRING;
-    enum TF_ATTR_INT = TF_AttrType.TF_ATTR_INT;
-    enum TF_ATTR_FLOAT = TF_AttrType.TF_ATTR_FLOAT;
-    enum TF_ATTR_BOOL = TF_AttrType.TF_ATTR_BOOL;
-    enum TF_ATTR_TYPE = TF_AttrType.TF_ATTR_TYPE;
-    enum TF_ATTR_SHAPE = TF_AttrType.TF_ATTR_SHAPE;
-    enum TF_ATTR_TENSOR = TF_AttrType.TF_ATTR_TENSOR;
-    enum TF_ATTR_PLACEHOLDER = TF_AttrType.TF_ATTR_PLACEHOLDER;
-    enum TF_ATTR_FUNC = TF_AttrType.TF_ATTR_FUNC;
-    TF_Buffer* TF_GetRegisteredKernelsForOp(const(char)*, TF_Status*) @nogc nothrow;
-    enum TF_DataType
-    {
-        TF_FLOAT = 1,
-        TF_DOUBLE = 2,
-        TF_INT32 = 3,
-        TF_UINT8 = 4,
-        TF_INT16 = 5,
-        TF_INT8 = 6,
-        TF_STRING = 7,
-        TF_COMPLEX64 = 8,
-        TF_COMPLEX = 8,
-        TF_INT64 = 9,
-        TF_BOOL = 10,
-        TF_QINT8 = 11,
-        TF_QUINT8 = 12,
-        TF_QINT32 = 13,
-        TF_BFLOAT16 = 14,
-        TF_QINT16 = 15,
-        TF_QUINT16 = 16,
-        TF_UINT16 = 17,
-        TF_COMPLEX128 = 18,
-        TF_HALF = 19,
-        TF_RESOURCE = 20,
-        TF_VARIANT = 21,
-        TF_UINT32 = 22,
-        TF_UINT64 = 23,
-    }
-    enum TF_FLOAT = TF_DataType.TF_FLOAT;
-    enum TF_DOUBLE = TF_DataType.TF_DOUBLE;
-    enum TF_INT32 = TF_DataType.TF_INT32;
-    enum TF_UINT8 = TF_DataType.TF_UINT8;
-    enum TF_INT16 = TF_DataType.TF_INT16;
-    enum TF_INT8 = TF_DataType.TF_INT8;
-    enum TF_STRING = TF_DataType.TF_STRING;
-    enum TF_COMPLEX64 = TF_DataType.TF_COMPLEX64;
-    enum TF_COMPLEX = TF_DataType.TF_COMPLEX;
-    enum TF_INT64 = TF_DataType.TF_INT64;
-    enum TF_BOOL = TF_DataType.TF_BOOL;
-    enum TF_QINT8 = TF_DataType.TF_QINT8;
-    enum TF_QUINT8 = TF_DataType.TF_QUINT8;
-    enum TF_QINT32 = TF_DataType.TF_QINT32;
-    enum TF_BFLOAT16 = TF_DataType.TF_BFLOAT16;
-    enum TF_QINT16 = TF_DataType.TF_QINT16;
-    enum TF_QUINT16 = TF_DataType.TF_QUINT16;
-    enum TF_UINT16 = TF_DataType.TF_UINT16;
-    enum TF_COMPLEX128 = TF_DataType.TF_COMPLEX128;
-    enum TF_HALF = TF_DataType.TF_HALF;
-    enum TF_RESOURCE = TF_DataType.TF_RESOURCE;
-    enum TF_VARIANT = TF_DataType.TF_VARIANT;
-    enum TF_UINT32 = TF_DataType.TF_UINT32;
-    enum TF_UINT64 = TF_DataType.TF_UINT64;
-    c_ulong TF_DataTypeSize(TF_DataType) @nogc nothrow;
-    TF_Buffer* TF_GetAllRegisteredKernels(TF_Status*) @nogc nothrow;
-    struct TF_Status;
-    enum TF_Code
-    {
-        TF_OK = 0,
-        TF_CANCELLED = 1,
-        TF_UNKNOWN = 2,
-        TF_INVALID_ARGUMENT = 3,
-        TF_DEADLINE_EXCEEDED = 4,
-        TF_NOT_FOUND = 5,
-        TF_ALREADY_EXISTS = 6,
-        TF_PERMISSION_DENIED = 7,
-        TF_UNAUTHENTICATED = 16,
-        TF_RESOURCE_EXHAUSTED = 8,
-        TF_FAILED_PRECONDITION = 9,
-        TF_ABORTED = 10,
-        TF_OUT_OF_RANGE = 11,
-        TF_UNIMPLEMENTED = 12,
-        TF_INTERNAL = 13,
-        TF_UNAVAILABLE = 14,
-        TF_DATA_LOSS = 15,
-    }
-    enum TF_OK = TF_Code.TF_OK;
-    enum TF_CANCELLED = TF_Code.TF_CANCELLED;
-    enum TF_UNKNOWN = TF_Code.TF_UNKNOWN;
-    enum TF_INVALID_ARGUMENT = TF_Code.TF_INVALID_ARGUMENT;
-    enum TF_DEADLINE_EXCEEDED = TF_Code.TF_DEADLINE_EXCEEDED;
-    enum TF_NOT_FOUND = TF_Code.TF_NOT_FOUND;
-    enum TF_ALREADY_EXISTS = TF_Code.TF_ALREADY_EXISTS;
-    enum TF_PERMISSION_DENIED = TF_Code.TF_PERMISSION_DENIED;
-    enum TF_UNAUTHENTICATED = TF_Code.TF_UNAUTHENTICATED;
-    enum TF_RESOURCE_EXHAUSTED = TF_Code.TF_RESOURCE_EXHAUSTED;
-    enum TF_FAILED_PRECONDITION = TF_Code.TF_FAILED_PRECONDITION;
-    enum TF_ABORTED = TF_Code.TF_ABORTED;
-    enum TF_OUT_OF_RANGE = TF_Code.TF_OUT_OF_RANGE;
-    enum TF_UNIMPLEMENTED = TF_Code.TF_UNIMPLEMENTED;
-    enum TF_INTERNAL = TF_Code.TF_INTERNAL;
-    enum TF_UNAVAILABLE = TF_Code.TF_UNAVAILABLE;
-    enum TF_DATA_LOSS = TF_Code.TF_DATA_LOSS;
-    TF_Status* TF_NewStatus() @nogc nothrow;
-    void TF_DeleteStatus(TF_Status*) @nogc nothrow;
-    void TF_SetStatus(TF_Status*, TF_Code, const(char)*) @nogc nothrow;
-    TF_Code TF_GetCode(const(TF_Status)*) @nogc nothrow;
-    const(char)* TF_Message(const(TF_Status)*) @nogc nothrow;
-    TF_Buffer* TF_ApiDefMapGet(TF_ApiDefMap*, const(char)*, c_ulong, TF_Status*) @nogc nothrow;
-    struct TF_Tensor;
-    TF_Tensor* TF_NewTensor(TF_DataType, const(c_long)*, int, void*, c_ulong, void function(void*, c_ulong, void*), void*) @nogc nothrow;
-    TF_Tensor* TF_AllocateTensor(TF_DataType, const(c_long)*, int, c_ulong) @nogc nothrow;
-    TF_Tensor* TF_TensorMaybeMove(TF_Tensor*) @nogc nothrow;
-    void TF_DeleteTensor(TF_Tensor*) @nogc nothrow;
-    TF_DataType TF_TensorType(const(TF_Tensor)*) @nogc nothrow;
-    int TF_NumDims(const(TF_Tensor)*) @nogc nothrow;
-    c_long TF_Dim(const(TF_Tensor)*, int) @nogc nothrow;
-    c_ulong TF_TensorByteSize(const(TF_Tensor)*) @nogc nothrow;
-    void* TF_TensorData(const(TF_Tensor)*) @nogc nothrow;
-    c_long TF_TensorElementCount(const(TF_Tensor)*) @nogc nothrow;
-    void TF_TensorBitcastFrom(const(TF_Tensor)*, TF_DataType, TF_Tensor*, const(c_long)*, int, TF_Status*) @nogc nothrow;
-    c_ulong TF_StringEncode(const(char)*, c_ulong, char*, c_ulong, TF_Status*) @nogc nothrow;
-    c_ulong TF_StringDecode(const(char)*, c_ulong, const(char)**, c_ulong*, TF_Status*) @nogc nothrow;
-    c_ulong TF_StringEncodedSize(c_ulong) @nogc nothrow;
-    bool TF_TensorIsAligned(const(TF_Tensor)*) @nogc nothrow;
-    void TF_ApiDefMapPut(TF_ApiDefMap*, const(char)*, c_ulong, TF_Status*) @nogc nothrow;
-    void TF_DeleteApiDefMap(TF_ApiDefMap*) @nogc nothrow;
     const(char)* TF_Version() @nogc nothrow;
     struct TF_Buffer
     {
@@ -484,19 +462,62 @@ extern(C)
     TF_Buffer* TF_GetAllOpList() @nogc nothrow;
     struct TF_ApiDefMap;
     TF_ApiDefMap* TF_NewApiDefMap(TF_Buffer*, TF_Status*) @nogc nothrow;
+    void TF_DeleteApiDefMap(TF_ApiDefMap*) @nogc nothrow;
+    void TF_ApiDefMapPut(TF_ApiDefMap*, const(char)*, c_ulong, TF_Status*) @nogc nothrow;
+    TF_Buffer* TF_ApiDefMapGet(TF_ApiDefMap*, const(char)*, c_ulong, TF_Status*) @nogc nothrow;
+    TF_Buffer* TF_GetAllRegisteredKernels(TF_Status*) @nogc nothrow;
+    TF_Buffer* TF_GetRegisteredKernelsForOp(const(char)*, TF_Status*) @nogc nothrow;
+    struct TF_Server;
+    TF_Server* TF_NewServer(const(void)*, c_ulong, TF_Status*) @nogc nothrow;
+    void TF_ServerStart(TF_Server*, TF_Status*) @nogc nothrow;
+    void TF_ServerStop(TF_Server*, TF_Status*) @nogc nothrow;
+    void TF_ServerJoin(TF_Server*, TF_Status*) @nogc nothrow;
+    const(char)* TF_ServerTarget(TF_Server*) @nogc nothrow;
+    void TF_DeleteServer(TF_Server*) @nogc nothrow;
+    void TF_RegisterLogListener(void function(const(char)*)) @nogc nothrow;
+    struct max_align_t
+    {
+        long __clang_max_align_nonce1;
+        real __clang_max_align_nonce2;
+    }
+    alias ptrdiff_t = c_long;
+    alias size_t = c_ulong;
+    alias wchar_t = int;
 
 
 
-    static if(!is(typeof(TF_CAPI_EXPORT))) {
-        private enum enumMixinStr_TF_CAPI_EXPORT = `enum TF_CAPI_EXPORT = __attribute__ ( ( visibility ( "default" ) ) );`;
-        static if(is(typeof({ mixin(enumMixinStr_TF_CAPI_EXPORT); }))) {
-            mixin(enumMixinStr_TF_CAPI_EXPORT);
+    static if(!is(typeof(NULL))) {
+        private enum enumMixinStr_NULL = `enum NULL = ( cast( void * ) 0 );`;
+        static if(is(typeof({ mixin(enumMixinStr_NULL); }))) {
+            mixin(enumMixinStr_NULL);
         }
     }
-    static if(!is(typeof(bool_))) {
-        private enum enumMixinStr_bool_ = `enum bool_ = _Bool;`;
-        static if(is(typeof({ mixin(enumMixinStr_bool_); }))) {
-            mixin(enumMixinStr_bool_);
+    static if(!is(typeof(_FEATURES_H))) {
+        private enum enumMixinStr__FEATURES_H = `enum _FEATURES_H = 1;`;
+        static if(is(typeof({ mixin(enumMixinStr__FEATURES_H); }))) {
+            mixin(enumMixinStr__FEATURES_H);
+        }
+    }
+    static if(!is(typeof(__bool_true_false_are_defined))) {
+        private enum enumMixinStr___bool_true_false_are_defined = `enum __bool_true_false_are_defined = 1;`;
+        static if(is(typeof({ mixin(enumMixinStr___bool_true_false_are_defined); }))) {
+            mixin(enumMixinStr___bool_true_false_are_defined);
+        }
+    }
+
+
+
+
+    static if(!is(typeof(false_))) {
+        private enum enumMixinStr_false_ = `enum false_ = 0;`;
+        static if(is(typeof({ mixin(enumMixinStr_false_); }))) {
+            mixin(enumMixinStr_false_);
+        }
+    }
+    static if(!is(typeof(_DEFAULT_SOURCE))) {
+        private enum enumMixinStr__DEFAULT_SOURCE = `enum _DEFAULT_SOURCE = 1;`;
+        static if(is(typeof({ mixin(enumMixinStr__DEFAULT_SOURCE); }))) {
+            mixin(enumMixinStr__DEFAULT_SOURCE);
         }
     }
 
@@ -513,44 +534,10 @@ extern(C)
 
 
 
-    static if(!is(typeof(false_))) {
-        private enum enumMixinStr_false_ = `enum false_ = 0;`;
-        static if(is(typeof({ mixin(enumMixinStr_false_); }))) {
-            mixin(enumMixinStr_false_);
-        }
-    }
-
-
-
-
-    static if(!is(typeof(__bool_true_false_are_defined))) {
-        private enum enumMixinStr___bool_true_false_are_defined = `enum __bool_true_false_are_defined = 1;`;
-        static if(is(typeof({ mixin(enumMixinStr___bool_true_false_are_defined); }))) {
-            mixin(enumMixinStr___bool_true_false_are_defined);
-        }
-    }
-    static if(!is(typeof(NULL))) {
-        private enum enumMixinStr_NULL = `enum NULL = ( cast( void * ) 0 );`;
-        static if(is(typeof({ mixin(enumMixinStr_NULL); }))) {
-            mixin(enumMixinStr_NULL);
-        }
-    }
-
-
-
-
-
-
-    static if(!is(typeof(_FEATURES_H))) {
-        private enum enumMixinStr__FEATURES_H = `enum _FEATURES_H = 1;`;
-        static if(is(typeof({ mixin(enumMixinStr__FEATURES_H); }))) {
-            mixin(enumMixinStr__FEATURES_H);
-        }
-    }
-    static if(!is(typeof(_DEFAULT_SOURCE))) {
-        private enum enumMixinStr__DEFAULT_SOURCE = `enum _DEFAULT_SOURCE = 1;`;
-        static if(is(typeof({ mixin(enumMixinStr__DEFAULT_SOURCE); }))) {
-            mixin(enumMixinStr__DEFAULT_SOURCE);
+    static if(!is(typeof(bool_))) {
+        private enum enumMixinStr_bool_ = `enum bool_ = _Bool;`;
+        static if(is(typeof({ mixin(enumMixinStr_bool_); }))) {
+            mixin(enumMixinStr_bool_);
         }
     }
 
@@ -563,16 +550,24 @@ extern(C)
             mixin(enumMixinStr___USE_ISOC11);
         }
     }
-
-
-
-
     static if(!is(typeof(__USE_ISOC99))) {
         private enum enumMixinStr___USE_ISOC99 = `enum __USE_ISOC99 = 1;`;
         static if(is(typeof({ mixin(enumMixinStr___USE_ISOC99); }))) {
             mixin(enumMixinStr___USE_ISOC99);
         }
     }
+
+
+
+
+    static if(!is(typeof(TF_CAPI_EXPORT))) {
+        private enum enumMixinStr_TF_CAPI_EXPORT = `enum TF_CAPI_EXPORT = __attribute__ ( ( visibility ( "default" ) ) );`;
+        static if(is(typeof({ mixin(enumMixinStr_TF_CAPI_EXPORT); }))) {
+            mixin(enumMixinStr_TF_CAPI_EXPORT);
+        }
+    }
+
+
 
 
 
@@ -2115,5 +2110,9 @@ extern(C)
             mixin(enumMixinStr___HAVE_GENERIC_SELECTION);
         }
     }
-
 }
+
+
+
+
+version (1):
