@@ -3,7 +3,7 @@ name: CI
 on: [push]
 
 jobs:
-  test:
+  test-windows:
 
     runs-on: windows-2019
 
@@ -18,23 +18,18 @@ jobs:
       with:
         submodules: true
 
-    - name: install-tf
-      shell: bash
+    - name: download-tf
       run: |
         mkdir -p download
         cd download
         wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.15.0.zip
-        unzip libtensorflow-cpu-windows-x86_64-1.15.0.zip
+        7z x libtensorflow-cpu-windows-x86_64-1.15.0.zip
         cp lib/* ..
 
     - name: download-dmd
-      shell: bash
-      run: wget http://downloads.dlang.org/releases/2.x/2.091.1/dmd.2.091.1.windows.7z
-
-    - uses: edgarrc/action-7z@v1.0.4
-      with:
-        args: 7z x dmd.2.091.1.windows.7z
+      run: |
+        wget http://downloads.dlang.org/releases/2.x/2.091.1/dmd.2.091.1.windows.7z
+        7z x dmd.2.091.1.windows.7z
 
     - name: test
-      shell: bash
-      run: PATH=$(pwd)/dmd2/bin:$PATH dub test --parallel -b=unittest-cov
+      run: dmd2/windows/bin64/dub test --parallel -b=unittest-cov
