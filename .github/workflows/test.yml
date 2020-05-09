@@ -18,10 +18,15 @@ jobs:
       with:
         submodules: true
 
+    - name: download
+      run: make download/include/tensorflow/c/c_api.h
+
     - name: test
       run: |
         source $(curl https://dlang.org/install.sh | bash -s -- ${{ matrix.compiler }} -a)
-        make test
+        LIBRARY_PATH=`pwd`/download/lib
+        LD_LIBRARY_PATH=`pwd`/download/lib
+        dub test --parallel -b=unittest-cov
 
     - name: codecov
       if: ${{ matrix.compiler == 'dmd' }}

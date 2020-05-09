@@ -4,22 +4,25 @@
 [![codecov](https://codecov.io/gh/ShigekiKarita/tfd/branch/master/graph/badge.svg)](https://codecov.io/gh/ShigekiKarita/tfd)
 [![Dub version](https://img.shields.io/dub/v/tfd.svg)](https://code.dlang.org/packages/tfd)
 
-## TODO
+## Roadmap
 
-- Setup CI
-- Example using C API to save/load TF graphs.
-- Parse `ops.pbtxt` and generate typed bindings.
-- Rewrite C API example with typed bindings.
-- Implement autograd in D.
+- [x] Setup CI
+- [x] Wrap tensor and session for basic usages (see `tfd.session` unittests).
+- [ ] Use [pbd](https://github.com/ShigekiKarita/pbd) to save/load proto files.
+- [ ] Example using C API to save/load TF graphs.
+- [ ] Parse `ops.pbtxt` to generate typed ops bindings.
+- [ ] Rewrite C API example with typed bindings.
+- [ ] Implement autograd, and simple training APIs in D.
 
 ## Requirements
 
-- [libtensorflow_framework.so (v.1.15)](https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-1.15.0.tar.gz)
+- Download and extract [libtensorflow.so (only Linux v.1.15 supported in tfd)](https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-1.15.0.tar.gz). Then set enviroment variables: `LIBRARY_PATH` and `LD_LIBRARY_PATH` to the extracted directory.
 
 ## Re-generate bindings
 
-Some stable API bindings (`c_api.h`, etc) are stored under `generated`. If you wanna regenerate them for your environment, try:
+tfd uses [dpp](https://github.com/atilaneves/dpp) to generate bindings from TF C-API. You need `libclang` to run dpp.
+
 ```bash
-make clean
-make
+dub fetch dpp
+dub run dpp -- --preprocess-only --include-path ./download/include <target dpp file>
 ```

@@ -14,6 +14,7 @@ tfd-test-*
 *.o
 *.obj
 *.lst
+generated/
 tensorflow/
 download/
 

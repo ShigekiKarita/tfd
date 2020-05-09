@@ -2,9 +2,12 @@ PROTOC_VERSION := 1.3.3
 
 .PHONY: all clean
 
-all: generated/tensorflow/c_api.d # generated/tensorflow/op_def_pb.d generated/lib/libtensorflow_pb.a
+all: source/tfd/c_api.d # generated/tensorflow/op_def_pb.d generated/lib/libtensorflow_pb.a
 
 # Generate D bindings
+%.d: %.dpp download/include/tensorflow/c/c_api.h
+	dub run dpp -- --preprocess-only --include-path ./download/include $<
+
 generated/tensorflow/c_api.d: download/include/tensorflow/c/c_api.h
 	bash ./dpp.sh tensorflow/c/c_api.h $@ tensorflow.c_api
 
