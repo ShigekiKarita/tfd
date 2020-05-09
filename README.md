@@ -5,6 +5,27 @@
 [![codecov](https://codecov.io/gh/ShigekiKarita/tfd/branch/master/graph/badge.svg)](https://codecov.io/gh/ShigekiKarita/tfd)
 [![Dub version](https://img.shields.io/dub/v/tfd.svg)](https://code.dlang.org/packages/tfd)
 
+## Example
+
+```d
+/// tensor add
+
+import tfd;
+import mir.ndslice : as, iota;
+
+with (newGraph)
+{
+  auto i = iota(2, 3, 4).as!float;
+
+  Operation x = placeholder!float("x", 2, 3, 4);
+  Operation two = constant(i);
+  Operation add = x + two;
+
+  Tensor addVal = session.run([add], [x: i.tensor])[0];
+  assert(addVal.sliced!(float, 3) == i * 2);
+}
+```
+
 ## Features
 
 - [x] Setup CI
