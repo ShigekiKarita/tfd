@@ -1,5 +1,5 @@
 module tfd.c_api.linux_;
-
+version (linux):
 
         import core.stdc.config;
         import core.stdc.stdarg: va_list;
