@@ -1,6 +1,7 @@
 # tfd: tensorflow for D
 
-![CI](https://github.com/ShigekiKarita/tfd/workflows/CI/badge.svg)
+[![linux](https://github.com/ShigekiKarita/tfd/workflows/linux/badge.svg)](https://github.com/ShigekiKarita/tfd/actions?query=workflow:linux)
+[![windows](https://github.com/ShigekiKarita/tfd/workflows/windows/badge.svg)](https://github.com/ShigekiKarita/tfd/actions?query=workflow:windows)
 [![codecov](https://codecov.io/gh/ShigekiKarita/tfd/branch/master/graph/badge.svg)](https://codecov.io/gh/ShigekiKarita/tfd)
 [![Dub version](https://img.shields.io/dub/v/tfd.svg)](https://code.dlang.org/packages/tfd)
 

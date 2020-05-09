@@ -1,0 +1,35 @@
+name: CI
+
+on: [push]
+
+jobs:
+  test:
+
+    runs-on: ubuntu-18.04
+
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        compiler: [dmd, ldc, dmd-beta, ldc-beta]
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: download-tf
+      run: |
+        mkdir -p download
+        cd download
+        wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-1.15.0.tar.gz
+        tar xvf libtensorflow-cpu-linux-x86_64-1.15.0.tar.gz
+
+    - name: test
+      run: |
+        source $(curl https://dlang.org/install.sh | bash -s -- ${{ matrix.compiler }} -a)
+        LIBRARY_PATH=`pwd`/download/lib
+        LD_LIBRARY_PATH=`pwd`/download/lib
+        dub test --parallel -b=unittest-cov
+
+    - name: codecov
+      if: ${{ matrix.compiler == 'dmd' }}
+      run: bash <(curl -s https://codecov.io/bash)
