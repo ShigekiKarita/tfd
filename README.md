@@ -7,6 +7,8 @@
 
 ## Example
 
+[Mir](https://github.com/libmir) is to **tfd** what [NumPy](https://numpy.org) is to [Tensorflow](https://www.tensorflow.org).
+
 ```d
 /// tensor add
 
