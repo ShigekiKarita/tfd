@@ -6,7 +6,8 @@ import std.typecons : tuple;
 import mir.rc.array : RCArray;
 import mir.rc.ptr : createRC, RCPtr;
 
-import tensorflow.c_api;
+import tfd.c_api;
+version (Windows) alias size_t = object.size_t;
 
 import tfd.testing : assertStatus;
 

@@ -16,7 +16,9 @@
 
 ## Requirements
 
-- Download and extract [libtensorflow.so (only Linux v.1.15 supported in tfd)](https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-1.15.0.tar.gz). Then set enviroment variables: `LIBRARY_PATH` and `LD_LIBRARY_PATH` to the extracted directory.
+- [libtensorflow](https://www.tensorflow.org/install/lang_c). Currently, tfd only supports
+  - [Linux v1.15.0](https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-1.15.0.tar.gz)
+  - [Windows v1.15.0](https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.15.0.zip)
 
 ## Re-generate bindings
 

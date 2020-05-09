@@ -1,7 +1,7 @@
 /// Testing module.
 module tfd.testing;
 
-import tensorflow.c_api;
+import tfd.c_api;
 
 /// Asserts TF_Status and shows message if failed.
 @nogc nothrow @trusted

@@ -1,8 +1,7 @@
 /// TF Session module.
 module tfd.session;
 
-import tensorflow.c_api;
-
+import tfd.c_api;
 import tfd.testing : assertStatus;
 
 

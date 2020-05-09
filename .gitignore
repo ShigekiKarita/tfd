@@ -21,3 +21,5 @@ download/
 *.so
 *.so.*
 *.pb
+*.dll
+*.lib

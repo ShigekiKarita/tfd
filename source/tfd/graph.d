@@ -3,9 +3,10 @@ module tfd.graph;
 
 import std.string : fromStringz;
 
-import tensorflow.c_api;
+import tfd.c_api;
 
 import tfd.testing : assertStatus;
+version (Windows) alias size_t = object.size_t;
 
 /// Creates a new placeholder in a given graph.
 @nogc nothrow @trusted
