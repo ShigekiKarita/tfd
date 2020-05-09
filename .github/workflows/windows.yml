@@ -21,8 +21,8 @@ jobs:
     - name: install-tf
       shell: bash
       run: |
-      	mkdir -p download
-	      cd download
+        mkdir -p download
+        cd download
         wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.15.0.zip
         unzip libtensorflow-cpu-windows-x86_64-1.15.0.zip
         cp lib/* ..
@@ -30,7 +30,7 @@ jobs:
     - name: download-dmd
       shell: bash
       run: wget http://downloads.dlang.org/releases/2.x/2.091.1/dmd.2.091.1.windows.7z
-  
+
     - uses: edgarrc/action-7z@v1.0.4
       with:
         args: 7z x dmd.2.091.1.windows.7z

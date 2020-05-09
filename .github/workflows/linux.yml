@@ -20,10 +20,10 @@ jobs:
 
     - name: download
       run: |
-      	mkdir -p download
-	      cd download
+        mkdir -p download
+        cd download
         wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-1.15.0.tar.gz
-      	tar xvf libtensorflow-cpu-linux-x86_64-1.15.0.tar.gz
+        tar xvf libtensorflow-cpu-linux-x86_64-1.15.0.tar.gz
 
     - name: test
       run: |
