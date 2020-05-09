@@ -63,7 +63,7 @@ jobs:
 
     - name: download-dmd
       run: |
-        wget "http://downloads.dlang.org/releases/2.x/2.091.1/dmd.2.091.1.windows.7z"
+        curl "http://downloads.dlang.org/releases/2.x/2.091.1/dmd.2.091.1.windows.7z" -o dmd.2.091.1.windows.7z
         7z x dmd.2.091.1.windows.7z
 
     - name: test
