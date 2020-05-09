@@ -62,9 +62,10 @@ jobs:
       run: cp lib/* .
 
     - name: download-dmd
-      run: |
-        curl "http://downloads.dlang.org/releases/2.x/2.091.1/dmd.2.091.1.windows.7z" -o dmd.2.091.1.windows.7z
-        7z x dmd.2.091.1.windows.7z
+      run: curl "http://downloads.dlang.org/releases/2.x/2.091.1/dmd.2.091.1.windows.7z" -o dmd.2.091.1.windows.7z
 
-    - name: test
+    - name: extract-dmd
+      run: 7z x dmd.2.091.1.windows.7z
+
+    - name: test-dmd
       run: dmd2/windows/bin64/dub test --parallel -b=unittest-cov
