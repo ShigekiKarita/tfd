@@ -68,6 +68,6 @@ jobs:
     - name: test-ldc
       if: ${{ matrix.compiler == 'ldc' }}
       run: |
-        curl "https://github.com/ldc-developers/ldc/releases/download/v1.21.0/ldc2-1.21.0-windows-x64.7z" -o ldc.7z
+        Invoke-WebRequest "https://github.com/ldc-developers/ldc/releases/download/v1.21.0/ldc2-1.21.0-windows-x64.7z" -OutFile ldc.7z
         7z x ldc.7z
         ldc2-1.21.0-windows-x64/bin/dub test --parallel -b=unittest-cov
