@@ -18,7 +18,7 @@ jobs:
       # with:
       #   submodules: true
 
-    - name: download
+    - name: download-tf
       run: |
         mkdir -p download
         cd download
@@ -53,19 +53,14 @@ jobs:
       #   submodules: true
 
     - name: download-tf
-      run: curl "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.15.0.zip" -o libtensorflow-cpu-windows-x86_64-1.15.0.zip
-
-    - name: extract-tf
-      run: 7z x libtensorflow-cpu-windows-x86_64-1.15.0.zip
-
-    - name: copy-tf
-      run: cp lib/* .
-
-    - name: download-dmd
-      run: curl "http://downloads.dlang.org/releases/2.x/2.091.1/dmd.2.091.1.windows.7z" -o dmd.2.091.1.windows.7z
-
-    - name: extract-dmd
-      run: 7z x dmd.2.091.1.windows.7z
+      run: |
+        curl "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.15.0.zip" -o libtensorflow-cpu-windows-x86_64-1.15.0.zip
+        7z x libtensorflow-cpu-windows-x86_64-1.15.0.zip
+        cp lib/* .
 
     - name: test-dmd
-      run: dmd2/windows/bin64/dub test --parallel -b=unittest-cov
+      if: ${{ matrix.compiler == 'dmd' }}
+      run: |
+        curl "http://downloads.dlang.org/releases/2020/dmd.2.091.1.windows.7z" -o dmd.2.091.1.windows.7z
+        7z x dmd.2.091.1.windows.7z
+        dmd2/windows/bin64/dub test --parallel -b=unittest-cov
