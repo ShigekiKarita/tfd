@@ -4,7 +4,6 @@ module tfd.graph;
 import std.string : fromStringz;
 
 import tensorflow.c_api;
-import tensorflow.op_def_pb;
 
 import tfd.testing : assertStatus;
 
@@ -30,7 +29,10 @@ TF_Operation* Placeholder(size_t N = 0)(
   return op;
 }
 
+
+/++ TODO(karita): use pbd instead of protobuf-c
 alias AttrValue = Tensorflow__AttrValue;
+
 
 /// Gets an AttrValue from a given operation.
 @nogc nothrow @trusted
@@ -54,6 +56,7 @@ bool GetAttrValue(
   }
   return ret;
 }
++/
 
 /// Creates a const tensor.
 @nogc nothrow @trusted
@@ -137,16 +140,16 @@ unittest
   assert(TF_OperationNumControlOutputs(feed) == 0);
 
   // TODO(karita): implement AttrValue type switching by `value_case`
-  AttrValue attrValue;
-  assert(GetAttrValue(feed, "dtype", &attrValue, s));
-  assert(attrValue.type == TENSORFLOW__DATA_TYPE__DT_INT32);
+  // AttrValue attrValue;
+  // assert(GetAttrValue(feed, "dtype", &attrValue, s));
+  // assert(attrValue.type == TENSORFLOW__DATA_TYPE__DT_INT32);
 
   // Test not found errors in TF_Operation*() query functions.
   assert(TF_OperationOutputListLength(feed, "bogus", s) == -1);
   assert(TF_GetCode(s) == TF_INVALID_ARGUMENT);
-  assert(!GetAttrValue(feed, "missing", &attrValue, s));
-  assert(TF_Message(s).fromStringz ==
-         "Operation 'feed' has no attr named 'missing'.");
+  // assert(!GetAttrValue(feed, "missing", &attrValue, s));
+  // assert(TF_Message(s).fromStringz ==
+  //        "Operation 'feed' has no attr named 'missing'.");
 
   // Make a constant oper with the scalar "3".
   TF_Operation* three = ScalarConst(3, graph, s);

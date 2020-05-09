@@ -16,8 +16,7 @@ tfd-test-*
 *.lst
 tensorflow/
 download/
-generated/
+
 *.so
 *.so.*
 *.pb
-

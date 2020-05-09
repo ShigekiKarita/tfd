@@ -2,7 +2,7 @@ PROTOC_VERSION := 1.3.3
 
 .PHONY: all clean
 
-all: generated/tensorflow/c_api.d generated/tensorflow/op_def_pb.d generated/lib/libtensorflow_pb.a
+all: generated/tensorflow/c_api.d # generated/tensorflow/op_def_pb.d generated/lib/libtensorflow_pb.a
 
 # Generate D bindings
 generated/tensorflow/c_api.d: download/include/tensorflow/c/c_api.h
@@ -40,4 +40,4 @@ clean:
 	rm -rfv generated
 
 test: all
-	LIBRARY_PATH=`pwd`/download/lib dub test --parallel -b=unittest-cov
+	LIBRARY_PATH=`pwd`/download/lib && LD_LIBRARY_PATH=`pwd`/download/lib && dub test --parallel -b=unittest-cov

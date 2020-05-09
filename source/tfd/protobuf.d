@@ -4,6 +4,8 @@
     https://github.com/protobuf-c/protobuf-c
     https://github.com/atilaneves/dpp
 */
+
+// deprecated("this module requires protobuf-c. do not use this.")
 module tfd.protobuf;
 
 
@@ -90,11 +92,12 @@ struct Message(Base)
 
   string toString()
   {
-      import tensorflow.op_def_pb : Tensorflow__TensorProto, Tensorflow__AttrValue;
-    static if (is(Base == Tensorflow__TensorProto) || is(Base == Tensorflow__AttrValue)) {
-      return Base.stringof;
-    }
-    else return toStringImpl!(Base)(this.base);
+    //   import tensorflow.op_def_pb : Tensorflow__TensorProto, Tensorflow__AttrValue;
+    // static if (is(Base == Tensorflow__TensorProto) || is(Base == Tensorflow__AttrValue)) {
+    //   return Base.stringof;
+    // }
+    // else
+    return toStringImpl!(Base)(this.base);
   }
 }
 
@@ -206,6 +209,7 @@ unittest
          ~ `children: [Child {name: "child"}, Child {name: "child"}]}`);
 }
 
+/++ TODO(karita): use pbd instead of protobuf-c
 /// test with tf proto
 unittest
 {
@@ -242,3 +246,4 @@ void printAllTFOps()
     }
 }
 
++/

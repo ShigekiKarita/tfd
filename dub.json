@@ -6,9 +6,7 @@
     "description": "TF for D",
     "license": "BSL-1.0",
     "name": "tfd",
-    "libs": ["tensorflow", "protobuf-c"],
-    "lflags": ["-rpath-link=download/lib", "-rpath=download/lib"],
-    "sourceFiles": ["generated/lib/libtensorflow_pb.a"],
+    "libs": ["tensorflow"],
     "sourcePaths": ["source", "generated"],
     "importPaths": ["source", "generated"],
     "dependencies": {
