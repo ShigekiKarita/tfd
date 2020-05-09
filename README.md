@@ -5,10 +5,11 @@
 [![codecov](https://codecov.io/gh/ShigekiKarita/tfd/branch/master/graph/badge.svg)](https://codecov.io/gh/ShigekiKarita/tfd)
 [![Dub version](https://img.shields.io/dub/v/tfd.svg)](https://code.dlang.org/packages/tfd)
 
-## Roadmap
+## Features
 
 - [x] Setup CI
 - [x] Wrap tensor and session for basic usages (see `tfd.session` unittests).
+- [x] mir.ndslice.Slice `s` <=> tfd.tensor.Tensor `t` integration by `s.makeTensor`, `t.slicedAs(s)`.
 - [ ] Use [pbd](https://github.com/ShigekiKarita/pbd) to save/load proto files.
 - [ ] Example using C API to save/load TF graphs.
 - [ ] Parse `ops.pbtxt` to generate typed ops bindings.

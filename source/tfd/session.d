@@ -153,7 +153,7 @@ public:
 unittest
 {
   import tfd.graph : Add, Placeholder, ScalarConst;
-  import tfd.tensor : makeTensor;
+  import tfd.tensor : makeTF_Tensor;
 
   TF_Status* s = TF_NewStatus();
   scope (exit) TF_DeleteStatus(s);
@@ -177,7 +177,7 @@ unittest
   assertStatus(s);
 
   // run the graph.
-  TF_Tensor* feedVal = makeTensor(3);
+  TF_Tensor* feedVal = makeTF_Tensor(3);
   scope (exit) TF_DeleteTensor(feedVal);
   TF_Tensor* addVal = session.run([add], [feed: feedVal])[0];
   scope (exit) TF_DeleteTensor(addVal);
@@ -194,7 +194,7 @@ unittest
   import std.typecons : tuple;
 
   import tfd.graph : Add, Placeholder, ScalarConst;
-  import tfd.tensor : makeTensor;
+  import tfd.tensor : makeTF_Tensor;
 
   TF_Status* s = TF_NewStatus();
   scope (exit) TF_DeleteStatus(s);
@@ -218,7 +218,7 @@ unittest
   assertStatus(s);
 
   // run the graph.
-  TF_Tensor* feedVal = makeTensor(3);
+  TF_Tensor* feedVal = makeTF_Tensor(3);
   scope (exit) TF_DeleteTensor(feedVal);
   session.setInputs(tuple(feed, feedVal));
   session.setOutputs(add);

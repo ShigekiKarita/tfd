@@ -1,9 +1,10 @@
 /// TF_Tensor wrapper.
 module tfd.tensor;
 
+import std.traits : isScalarType;
 import std.typecons : tuple;
 
-import mir.rc.array : RCArray;
+import mir.ndslice.slice : Slice, SliceKind;
 import mir.rc.ptr : createRC, RCPtr;
 
 import tfd.c_api;
@@ -14,7 +15,7 @@ import tfd.testing : assertStatus;
 // TODO(karita): support all dtypes in TF
 
 /// Meta data to store TF/D types.
-struct TFDPair(_D, TF_DataType _tf) { 
+struct TFDPair(_D, TF_DataType _tf) {
   /// tensorflow type
   enum tf = _tf;
   /// D type
@@ -99,8 +100,8 @@ TF_Tensor* empty(T, size_t N)(long[N] dims...)
 }
 
 
-/// Creates a tensor with dtype of T with values to copy.
-TF_Tensor* makeTensor(size_t N, SourceRange)(long[N] dims, SourceRange source) 
+/// Creates a tensor from a given range.
+TF_Tensor* makeTF_Tensor(size_t N, SourceRange)(long[N] dims, SourceRange source)
 {
   import std.algorithm.mutation : copy;
   import std.range.primitives : ElementType;
@@ -112,24 +113,50 @@ TF_Tensor* makeTensor(size_t N, SourceRange)(long[N] dims, SourceRange source)
   return t;
 }
 
-
-/// Creates a tensor with a given scalar.
-TF_Tensor* makeTensor(T)(T scalar)
+/// Creates a tensor from a given mir.ndslice.Slice
+TF_Tensor* makeTF_Tensor(Iterator, size_t N, SliceKind kind)(Slice!(Iterator, N, kind) slice)
 {
-  long[0] dims;
-  return makeTensor(dims, (&scalar)[0 .. 1]);
+  import mir.ndslice.topology : flattened;
+  long[N] shape;
+  static foreach (i; 0 .. N)
+  {
+    shape[i] = slice.length!i;
+  }
+  return makeTF_Tensor(shape, slice.flattened);
 }
 
-/// Make a scalar tensor;
+///
 unittest
 {
-  auto t = makeTensor(0);
+  import mir.ndslice : iota, universal;
+
+  auto slice = iota(2, 3);
+  auto tensor = slice.makeTF_Tensor;
+  scope (exit) TF_DeleteTensor(tensor);
+}
+
+/// Creates a tensor from a given scalar.
+TF_Tensor* makeTF_Tensor(T)(T scalar) if (isScalarType!T)
+{
+  long[0] dims;
+  return makeTF_Tensor(dims, (&scalar)[0 .. 1]);
+}
+
+///
+@nogc nothrow
+unittest
+{
+  auto t = makeTF_Tensor(0);
+  scope (exit) TF_DeleteTensor(t);
   assert(TF_TensorType(t) == TF_INT32);
 }
 
 /// Tensor freed by dtor (RAII) with convinient methods.
 struct TensorOwner
 {
+  import mir.ndslice.slice : Contiguous;
+  import mir.rc.array : RCArray;
+
   /// Base pointer.
   TF_Tensor* ptr;
   alias ptr this;
@@ -139,7 +166,7 @@ struct TensorOwner
 
   /// Dtor.
   @nogc nothrow @trusted
-  ~this() 
+  ~this()
   {
     TF_DeleteTensor(ptr);
   }
@@ -161,12 +188,12 @@ struct TensorOwner
 
   /// Return the number of dimentions.
   @nogc nothrow @trusted
-  int ndim() const 
+  int ndim() const
   {
     return TF_NumDims(this.ptr);
   }
 
-  /// Return tensor dimensions i.e., shape
+  /// Returns a tensor shape.
   @nogc nothrow @trusted
   RCArray!long shape() const
   {
@@ -180,27 +207,56 @@ struct TensorOwner
 
   /// Returns data type, i.e. element type enum identifier.
   @nogc nothrow @trusted
-  TF_DataType dataType() const 
+  TF_DataType dataType() const
   {
-    return TF_TensorType(this.ptr); 
+    return TF_TensorType(this.ptr);
+  }
+
+  /// Returns a tensor slice as same as a given slice with assertions.
+  Slice!(T*, N, Contiguous)
+  slicedAs(Iterator, size_t N, SliceKind kind, T = typeof(Iterator.init[0]))(
+      Slice!(Iterator, N, kind) slice)
+  {
+    static foreach (i; 0 .. N)
+    {
+      assert(this.shape[i] == slice.length!i);
+    }
+    return cast(typeof(return)) this.sliced!(T, N);
+  }
+
+  /// Return a tensor slice with an element type T with assertions.
+  Slice!(T*, N, Contiguous) sliced(T, size_t N)()
+  {
+    import mir.ndslice.slice : sliced;
+
+    assert(this.ndim == N);
+
+    size_t[N] lengths;
+    static foreach (i; 0 .. N)
+    {
+      lengths[i] = this.shape[i];
+    }
+    return this.payload!T.sliced(lengths);
   }
 }
 
-alias RCTensor = RCPtr!TensorOwner;
+///
+alias Tensor = RCPtr!TensorOwner;
 
 /// Allocates ref-counted (RC) Tensor.
+/// TODO(karita): non-allocated (borrowed) version.
 @trusted
-RCTensor makeRCTensor(Args ...)(Args args)
+Tensor makeTensor(Args ...)(Args args)
 {
   import core.lifetime : forward;
-  return createRC!TensorOwner(makeTensor(forward!args));
+  return createRC!TensorOwner(makeTF_Tensor(forward!args));
 }
 
 /// Make a scalar RCTensor.
 @nogc nothrow @safe
 unittest
 {
-  const RCTensor t = makeRCTensor(123);
+  const t = makeTensor(123);
 
   // check content
   assert(t.payload!int[0] == 123);
@@ -208,7 +264,7 @@ unittest
   assert(t.elementCount == 1);
   assert(t.shape.length == 0);
   assert(t.dataType == TF_INT32);
-  
+
   // check RC
   assert(t._counter == 1);
   {
@@ -219,15 +275,29 @@ unittest
   assert(t._counter == 1);
 }
 
-/// Make a multi-dim RCTensor.
+/// Make an empty multi-dim RCTensor.
 @nogc nothrow @safe
 unittest
 {
-  const RCTensor t = createRC!TensorOwner(empty!double(1, 2, 3));
+  const t = createRC!TensorOwner(empty!double(1, 2, 3));
 
   // check content
   assert(t.ndim == 3);
   static immutable expectedShape = [1, 2, 3];
   assert(t.shape[] == expectedShape);
   assert(t.dataType == TF_DOUBLE);
+}
+
+/// Make a Tensor from iota slice.
+@nogc nothrow @safe
+unittest
+{
+  import mir.ndslice : iota, sliced;
+
+  auto s = iota(2, 3);
+  auto t = s.makeTensor;
+  auto st = t.slicedAs(s);
+  assert(t.dataType == TF_INT64);
+  assert(t.shape[] == s.shape);
+  assert(st == s);
 }

@@ -83,9 +83,9 @@ TF_Operation* Const(
 TF_Operation* ScalarConst(int v, TF_Graph* graph, TF_Status* s,
                           const(char)* name = "scalar") 
 {
-  import tfd.tensor : makeTensor;
+  import tfd.tensor : makeTF_Tensor;
   // TODO(karita): free this tensor
-  return Const(makeTensor(v), graph, s, name);
+  return Const(makeTF_Tensor(v), graph, s, name);
 }
 
 
