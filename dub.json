@@ -7,8 +7,6 @@
     "license": "BSL-1.0",
     "name": "tfd",
     "libs": ["tensorflow"],
-    "sourcePaths": ["source", "generated"],
-    "importPaths": ["source", "generated"],
     "dependencies": {
         "mir-algorithm": "~>3.7.28"
     }

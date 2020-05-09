@@ -103,17 +103,6 @@ TF_Operation* Add(TF_Operation* l, TF_Operation* r, TF_Graph* graph,
   return op;
 }
 
-/// ditto
-TF_Operation* Add(TF_Output l, TF_Output r,
-                  TF_Graph* graph, TF_Status* s,
-                  const(char)* name = "add") {
-  TF_OperationDescription* desc = TF_NewOperation(graph, "AddN", name);
-  TF_Output[2] inputs;
-  inputs[0] = l;
-  inputs[1] = r;
-  TF_AddInputList(desc, inputs.ptr, 2);
-  return TF_FinishOperation(desc, s);
-}
 
 /// CAPI Graph test in `tensorflow/c/c_api_test.c`
 @nogc nothrow
