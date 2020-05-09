@@ -15,16 +15,17 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-      with:
-        submodules: true
+      # with:
+      #   submodules: true
 
     - name: download-tf
-      run: |
-        mkdir -p download
-        cd download
-        wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.15.0.zip
-        7z x libtensorflow-cpu-windows-x86_64-1.15.0.zip
-        cp lib/* ..
+      run: wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.15.0.zip
+
+    - name: extract-tf
+      run: 7z x libtensorflow-cpu-windows-x86_64-1.15.0.zip
+
+    - name: copy-tf
+      run: cp lib/* .
 
     - name: download-dmd
       run: |
