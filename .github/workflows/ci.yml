@@ -54,14 +54,14 @@ jobs:
 
     - name: download-tf
       run: |
-        curl "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.15.0.zip" -o tf.zip
+        Invoke-WebRequest "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.15.0.zip" -OutFile tf.zip
         7z x tf.zip
         cp lib/* .
 
     - name: test-dmd
       if: ${{ matrix.compiler == 'dmd' }}
       run: |
-        curl "http://downloads.dlang.org/releases/2020/dmd.2.091.1.windows.7z" -o dmd.7z
+        Invoke-WebRequest "http://downloads.dlang.org/releases/2.x/2.091.1/dmd.2.091.1.windows.7z" -OutFile dmd.7z
         7z x dmd.7z
         dmd2/windows/bin64/dub test --parallel -b=unittest-cov
 
