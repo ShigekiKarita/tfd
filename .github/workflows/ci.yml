@@ -43,9 +43,9 @@ jobs:
 
     strategy:
       fail-fast: false
-      max-parallel: 1
+      max-parallel: 2
       matrix:
-        compiler: [dmd]
+        compiler: [dmd, ldc]
 
     steps:
     - uses: actions/checkout@v1
@@ -54,13 +54,20 @@ jobs:
 
     - name: download-tf
       run: |
-        curl "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.15.0.zip" -o libtensorflow-cpu-windows-x86_64-1.15.0.zip
-        7z x libtensorflow-cpu-windows-x86_64-1.15.0.zip
+        curl "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.15.0.zip" -o tf.zip
+        7z x tf.zip
         cp lib/* .
 
     - name: test-dmd
       if: ${{ matrix.compiler == 'dmd' }}
       run: |
-        curl "http://downloads.dlang.org/releases/2020/dmd.2.091.1.windows.7z" -o dmd.2.091.1.windows.7z
-        7z x dmd.2.091.1.windows.7z
+        curl "http://downloads.dlang.org/releases/2020/dmd.2.091.1.windows.7z" -o dmd.7z
+        7z x dmd.7z
         dmd2/windows/bin64/dub test --parallel -b=unittest-cov
+
+    - name: test-ldc
+      if: ${{ matrix.compiler == 'ldc' }}
+      run: |
+        curl "https://github.com/ldc-developers/ldc/releases/download/v1.21.0/ldc2-1.21.0-windows-x64.7z" -o ldc.7z
+        7z x ldc.7z
+        ldc2-1.21.0-windows-x64/bin/dub test --parallel -b=unittest-cov
