@@ -35,3 +35,36 @@ jobs:
     - name: codecov
       if: ${{ matrix.compiler == 'dmd' }}
       run: bash <(curl -s https://codecov.io/bash)
+
+
+  test-windows:
+
+    runs-on: windows-2019
+
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        compiler: [dmd]
+
+    steps:
+    - uses: actions/checkout@v1
+      # with:
+      #   submodules: true
+
+    - name: download-tf
+      run: curl "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.15.0.zip" -o libtensorflow-cpu-windows-x86_64-1.15.0.zip
+
+    - name: extract-tf
+      run: 7z x libtensorflow-cpu-windows-x86_64-1.15.0.zip
+
+    - name: copy-tf
+      run: cp lib/* .
+
+    - name: download-dmd
+      run: |
+        wget "http://downloads.dlang.org/releases/2.x/2.091.1/dmd.2.091.1.windows.7z"
+        7z x dmd.2.091.1.windows.7z
+
+    - name: test
+      run: dmd2/windows/bin64/dub test --parallel -b=unittest-cov
