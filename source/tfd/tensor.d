@@ -238,6 +238,13 @@ struct TensorOwner
     }
     return this.payload!T.sliced(lengths);
   }
+
+  /// Returns a scalar if valid.
+  T scalar(T)()
+  {
+    assert(this.ndim == 0);
+    return this.payload!T[0];
+  }
 }
 
 ///
@@ -246,7 +253,7 @@ alias Tensor = RCPtr!TensorOwner;
 /// Allocates ref-counted (RC) Tensor.
 /// TODO(karita): non-allocated (borrowed) version.
 @trusted
-Tensor makeTensor(Args ...)(Args args)
+Tensor tensor(Args ...)(Args args)
 {
   import core.lifetime : forward;
   return createRC!TensorOwner(makeTF_Tensor(forward!args));
@@ -256,7 +263,7 @@ Tensor makeTensor(Args ...)(Args args)
 @nogc nothrow @safe
 unittest
 {
-  const t = makeTensor(123);
+  const t = tensor(123);
 
   // check content
   assert(t.payload!int[0] == 123);
@@ -295,7 +302,7 @@ unittest
   import mir.ndslice : iota, sliced;
 
   auto s = iota(2, 3);
-  auto t = s.makeTensor;
+  auto t = s.tensor;
   auto st = t.slicedAs(s);
   assert(t.dataType == TF_INT64);
   assert(t.shape[] == s.shape);

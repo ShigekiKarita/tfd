@@ -3,10 +3,11 @@ module tfd.graph;
 
 import std.string : fromStringz;
 
-import tfd.c_api;
+import mir.rc.ptr : createRC, RCPtr;
 
+import tfd.c_api;
 import tfd.testing : assertStatus;
-version (Windows) alias size_t = object.size_t;
+
 
 /// Creates a new placeholder in a given graph.
 @nogc nothrow @trusted
@@ -15,7 +16,7 @@ TF_Operation* Placeholder(size_t N = 0)(
     TF_Status* s,
     const(char)* name = "feed",
     TF_DataType dtype = TF_INT32,
-    const long[N] dims = [])
+    long[N] dims = (long[N]).init)
 {
   TF_Operation* op;
   TF_OperationDescription* desc = TF_NewOperation(graph, "Placeholder", name);
@@ -147,4 +148,81 @@ unittest
   // Add oper.
   Add(feed, three, graph, s);
   assertStatus(s);
+}
+
+
+/// TF_Graph freed by dtor (RAII) with convinient methods.
+struct GraphOwner
+{
+  TF_Graph* ptr;
+  TF_Status* status;
+  alias ptr this;
+
+  // Not copyable.
+  @disable this(this);
+
+  @nogc nothrow @trusted
+  ~this()
+  {
+    TF_DeleteGraph(this.ptr);
+    TF_DeleteStatus(this.status);
+  }
+}
+
+struct Operation
+{
+  TF_Operation* ptr;
+  Graph graph;
+  alias ptr this;
+
+  Operation opBinary(string op : "+")(Operation rhs)
+  {
+    assert(this.graph == rhs.graph);
+    scope (exit) assertStatus(this.graph.status);
+    return Operation(Add(this.ptr, rhs.ptr, this.graph.ptr, this.graph.status), this.graph);
+  }
+
+}
+
+struct Graph
+{
+  import tfd.session : Session;
+  import tfd.tensor : tfType;
+
+  RCPtr!GraphOwner base;
+  alias base this;
+
+  Operation placeholder(T, size_t N)(
+      const(char)* name,
+      long[N] dims...)
+  {
+    scope (exit) assertStatus(this.status);
+    return Operation(Placeholder!N(this.ptr, this.status, name, tfType!T, dims), this);
+  }
+
+  Operation placeholder(T, size_t N)(long[N] dims ...)
+  {
+    return placeholder!T("", dims);
+  }
+
+  Operation constant(S)(S x, const(char)* name = "const")
+  {
+    import tfd.tensor : makeTF_Tensor;
+    scope (exit) assertStatus(this.status);
+    // TODO(karita) free TF_Tensor when this class is freed
+    return Operation(Const(x.makeTF_Tensor, this.ptr, this.status, name), this);
+  }
+
+  @nogc nothrow
+  Session session()
+  {
+    return Session(this.ptr, this.status);
+  }
+}
+
+@nogc nothrow @trusted
+Graph newGraph()
+{
+  import mir.rc.ptr : createRC;
+  return Graph(createRC!GraphOwner(TF_NewGraph(), TF_NewStatus()));
 }

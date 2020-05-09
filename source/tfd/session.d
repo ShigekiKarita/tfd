@@ -131,7 +131,7 @@ public:
     assertStatus(s);
   }
 
-  /// Runs in python-like usage.　
+  /// Runs in python-like usage.
   /// WARNING: you need to free the returned tensors by yourself.
   TF_Tensor*[N] run(size_t N)(TF_Operation*[N] outputs, TF_Tensor*[TF_Operation*] inputs)
   {
@@ -147,6 +147,40 @@ public:
     }
     return ret;
   }
+
+  import tfd.tensor : Tensor, TensorOwner;
+  import tfd.graph : Operation;
+
+  /// Runs in python-like usage.
+  /// WARNING: you need to free the returned tensors by yourself.
+  Tensor[N] run(size_t N)(Operation[N] outputs, Tensor[Operation] inputs)
+  {
+    import mir.rc.ptr : createRC;
+
+    TF_Tensor*[TF_Operation*] rawInputs;
+    foreach (o, t; inputs)
+    {
+      rawInputs[o.ptr] = t.ptr;
+    }
+    this.setInputs(rawInputs);
+
+    TF_Operation*[N] rawOutputs;
+    foreach (i, o; outputs)
+    {
+      rawOutputs[i] = o.ptr;
+    }
+    this.setOutputs(rawOutputs);
+    auto s = TF_NewStatus();
+    scope (exit) TF_DeleteStatus(s);
+    this.run(s);
+    Tensor[N] ret;
+    foreach (i; 0 .. N)
+    {
+      ret[i] = createRC!TensorOwner(this.outputValues_[i]);
+    }
+    return ret;
+  }
+
 }
 
 /// CAPI Session test in `tensorflow/c/c_api_test.c`

@@ -9,7 +9,7 @@
 
 - [x] Setup CI
 - [x] Wrap tensor and session for basic usages (see `tfd.session` unittests).
-- [x] mir.ndslice.Slice `s` <=> tfd.tensor.Tensor `t` integration by `s.makeTensor`, `t.slicedAs(s)`.
+- [x] mir.ndslice.Slice `s` <=> tfd.tensor.Tensor `t` integration by `s.tensor`, `t.slicedAs(s)`.
 - [ ] Use [pbd](https://github.com/ShigekiKarita/pbd) to save/load proto files.
 - [ ] Example using C API to save/load TF graphs.
 - [ ] Parse `ops.pbtxt` to generate typed ops bindings.
