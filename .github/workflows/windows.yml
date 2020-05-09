@@ -19,7 +19,7 @@ jobs:
       #   submodules: true
 
     - name: download-tf
-      run: wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.15.0.zip
+      run: wget "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.15.0.zip"
 
     - name: extract-tf
       run: 7z x libtensorflow-cpu-windows-x86_64-1.15.0.zip
@@ -29,7 +29,7 @@ jobs:
 
     - name: download-dmd
       run: |
-        wget http://downloads.dlang.org/releases/2.x/2.091.1/dmd.2.091.1.windows.7z
+        wget "http://downloads.dlang.org/releases/2.x/2.091.1/dmd.2.091.1.windows.7z"
         7z x dmd.2.091.1.windows.7z
 
     - name: test
