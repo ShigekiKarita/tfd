@@ -15,6 +15,13 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
+    - uses: actions/cache@v1
+      with:
+        path: ~\AppData\Local\dub
+        key: ${{ runner.os }}-dub-${{ hashFiles('**/dub.json') }}
+        restore-keys: |
+          ${{ runner.os }}-dub-
+
     - name: download-tf
       run: |
         Invoke-WebRequest "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.15.0.zip" -OutFile tf.zip
