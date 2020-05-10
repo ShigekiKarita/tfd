@@ -17,6 +17,7 @@ tfd-test-*
 generated/
 tensorflow/
 download/
+.vscode/
 
 *.so
 *.so.*

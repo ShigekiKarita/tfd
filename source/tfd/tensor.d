@@ -130,7 +130,7 @@ unittest
 {
   import mir.ndslice : iota, universal;
 
-  auto slice = iota(2, 3);
+  const slice = iota(2, 3);
   auto tensor = slice.makeTF_Tensor;
   scope (exit) TF_DeleteTensor(tensor);
 }
@@ -172,9 +172,10 @@ struct TensorOwner
   }
 
   /// Return an array storing data.
-  @nogc nothrow @trusted
+  @trusted
   inout(T)[] payload(T)() inout
   {
+    assert(tfType!T == this.dataType);
     auto tp = cast(inout(T)*) TF_TensorData(this.ptr);
     return tp[0 .. this.elementCount];
   }
@@ -240,7 +241,7 @@ struct TensorOwner
   }
 
   /// Returns a scalar if valid.
-  T scalar(T)()
+  ref inout(T) scalar(T)() inout
   {
     assert(this.ndim == 0);
     return this.payload!T[0];
@@ -303,7 +304,7 @@ unittest
 
   auto s = iota(2, 3);
   auto t = s.tensor;
-  auto st = t.slicedAs(s);
+  const st = t.slicedAs(s);
   assert(t.dataType == TF_INT64);
   assert(t.shape[] == s.shape);
   assert(st == s);

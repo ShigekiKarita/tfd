@@ -154,7 +154,9 @@ unittest
 /// TF_Graph freed by dtor (RAII) with convinient methods.
 struct GraphOwner
 {
+  /// Raw pointer.
   TF_Graph* ptr;
+  /// Status pointer.
   TF_Status* status;
   alias ptr this;
 
@@ -172,10 +174,13 @@ struct GraphOwner
 /// TF_Operation wrapper used in Graph.
 struct Operation
 {
+  /// Raw pointer.
   TF_Operation* ptr;
+  /// Graph scope containing this operation.
   Graph graph;
   alias ptr this;
 
+  /// Binary operator for +.
   Operation opBinary(string op : "+")(Operation rhs)
   {
     assert(this.graph == rhs.graph);
@@ -191,9 +196,11 @@ struct Graph
   import tfd.session : Session;
   import tfd.tensor : tfType;
 
+  /// Base reference counted pointer.
   SlimRCPtr!GraphOwner base;
   alias base this;
 
+  /// Creates a placeholder in this graph.
   Operation placeholder(T, size_t N)(
       const(char)* name,
       long[N] dims...)
@@ -202,11 +209,13 @@ struct Graph
     return Operation(Placeholder!N(this.ptr, this.status, name, tfType!T, dims), this);
   }
 
+  /// ditto.
   Operation placeholder(T, size_t N)(long[N] dims ...)
   {
     return placeholder!T("", dims);
   }
 
+  /// Creates a constant in this graph.
   Operation constant(S)(S x, const(char)* name = "const")
   {
     import tfd.tensor : makeTF_Tensor;
@@ -215,6 +224,7 @@ struct Graph
     return Operation(Const(x.makeTF_Tensor, this.ptr, this.status, name), this);
   }
 
+  /// Creates a Session in this graph.
   @nogc nothrow
   Session session()
   {
@@ -222,9 +232,49 @@ struct Graph
   }
 }
 
+/// Creates a new reference-counted Graph object.
 @nogc nothrow @trusted
 Graph newGraph()
 {
   import mir.rc.slim_ptr : createSlimRC;
   return Graph(createSlimRC!GraphOwner(TF_NewGraph(), TF_NewStatus()));
+}
+
+/// Export/import graph.
+unittest
+{
+  import tfd.tensor;
+
+  auto buffer = TF_NewBuffer;
+  scope (exit) TF_DeleteBuffer(buffer);
+  {
+    auto graph = newGraph;
+    with (graph)
+    {
+      auto a = placeholder!int("a");
+      assert(TF_GraphOperationByName(graph, "a"));
+      auto b = constant(3, "b");
+      assert(TF_GraphOperationByName(graph, "b"));
+      // TODO(karita): provide name "add", identity?
+      auto add = a + b;
+      assert(TF_GraphOperationByName(graph, "add"));
+    }
+    // Export to a GraphDef (protobuf)
+    TF_GraphToGraphDef(graph, buffer, graph.status);
+    assertStatus(graph.status);
+  }
+  {
+    // Import from the GraphDef (protobuf)
+    auto graph = newGraph;
+    auto opts = TF_NewImportGraphDefOptions;
+    TF_GraphImportGraphDef(graph, buffer, opts, graph.status);
+    assertStatus(graph.status);
+
+    auto a = TF_GraphOperationByName(graph, "a");
+    assert(a);
+    auto add = TF_GraphOperationByName(graph, "add");
+    assert(add);
+    const t = TensorOwner(graph.session.run([add], [a: 1.tensor])[0]);
+    assert(t.scalar!int == 1 + 3);
+  }
 }
