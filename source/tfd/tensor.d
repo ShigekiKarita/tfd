@@ -5,7 +5,7 @@ import std.traits : isScalarType;
 import std.typecons : tuple;
 
 import mir.ndslice.slice : Slice, SliceKind;
-import mir.rc.ptr : createRC, RCPtr;
+import mir.rc.slim_ptr : createSlimRC, SlimRCPtr;
 
 import tfd.c_api;
 version (Windows) alias size_t = object.size_t;
@@ -248,7 +248,7 @@ struct TensorOwner
 }
 
 ///
-alias Tensor = RCPtr!TensorOwner;
+alias Tensor = SlimRCPtr!TensorOwner;
 
 /// Allocates ref-counted (RC) Tensor.
 /// TODO(karita): non-allocated (borrowed) version.
@@ -256,7 +256,7 @@ alias Tensor = RCPtr!TensorOwner;
 Tensor tensor(Args ...)(Args args)
 {
   import core.lifetime : forward;
-  return createRC!TensorOwner(makeTF_Tensor(forward!args));
+  return createSlimRC!TensorOwner(makeTF_Tensor(forward!args));
 }
 
 /// Make a scalar RCTensor.
@@ -286,7 +286,7 @@ unittest
 @nogc nothrow @safe
 unittest
 {
-  const t = createRC!TensorOwner(empty!double(1, 2, 3));
+  const t = createSlimRC!TensorOwner(empty!double(1, 2, 3));
 
   // check content
   assert(t.ndim == 3);

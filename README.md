@@ -38,12 +38,14 @@ with (newGraph)
 - [ ] Parse `ops.pbtxt` to generate typed ops bindings.
 - [ ] Rewrite C API example with typed bindings.
 - [ ] Implement autograd, and simple training APIs in D.
+- [ ] Support cloud TPU.
 
 ## Requirements
 
 - [libtensorflow](https://www.tensorflow.org/install/lang_c). Currently, tfd only supports
-  - [Linux v1.15.0](https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-1.15.0.tar.gz)
-  - [Windows v1.15.0](https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.15.0.zip)
+  - [Linux CPU v1.15.0](https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-1.15.0.tar.gz)
+  - [Linux GPU v1.15.0](https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-gpu-linux-x86_64-1.15.0.tar.gz) (Not tested in CI)
+  - [Windows CPU v1.15.0](https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.15.0.zip)
 
 ## Re-generate bindings
 

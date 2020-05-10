@@ -3,7 +3,7 @@ module tfd.graph;
 
 import std.string : fromStringz;
 
-import mir.rc.ptr : createRC, RCPtr;
+import mir.rc.slim_ptr : createSlimRC, SlimRCPtr;
 
 import tfd.c_api;
 import tfd.testing : assertStatus;
@@ -169,6 +169,7 @@ struct GraphOwner
   }
 }
 
+/// TF_Operation wrapper used in Graph.
 struct Operation
 {
   TF_Operation* ptr;
@@ -184,12 +185,13 @@ struct Operation
 
 }
 
+/// Shared GraphOwner type.
 struct Graph
 {
   import tfd.session : Session;
   import tfd.tensor : tfType;
 
-  RCPtr!GraphOwner base;
+  SlimRCPtr!GraphOwner base;
   alias base this;
 
   Operation placeholder(T, size_t N)(
@@ -223,6 +225,6 @@ struct Graph
 @nogc nothrow @trusted
 Graph newGraph()
 {
-  import mir.rc.ptr : createRC;
-  return Graph(createRC!GraphOwner(TF_NewGraph(), TF_NewStatus()));
+  import mir.rc.slim_ptr : createSlimRC;
+  return Graph(createSlimRC!GraphOwner(TF_NewGraph(), TF_NewStatus()));
 }

@@ -5,6 +5,7 @@ import tfd.c_api;
 import tfd.testing : assertStatus;
 
 
+/// Wrapper class for TF_Session.
 struct Session 
 {
 private:
@@ -155,7 +156,7 @@ public:
   /// WARNING: you need to free the returned tensors by yourself.
   Tensor[N] run(size_t N)(Operation[N] outputs, Tensor[Operation] inputs)
   {
-    import mir.rc.ptr : createRC;
+    import mir.rc.slim_ptr : createSlimRC;
 
     TF_Tensor*[TF_Operation*] rawInputs;
     foreach (o, t; inputs)
@@ -176,7 +177,7 @@ public:
     Tensor[N] ret;
     foreach (i; 0 .. N)
     {
-      ret[i] = createRC!TensorOwner(this.outputValues_[i]);
+      ret[i] = createSlimRC!TensorOwner(this.outputValues_[i]);
     }
     return ret;
   }
