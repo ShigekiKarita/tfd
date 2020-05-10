@@ -1,4 +1,4 @@
-module tfd.c_api.linux_;
+module tfd.c_api.linux;
 version (linux):
 
         import core.stdc.config;

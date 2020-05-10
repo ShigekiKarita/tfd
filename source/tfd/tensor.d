@@ -260,6 +260,12 @@ Tensor tensor(Args ...)(Args args)
   return createSlimRC!TensorOwner(makeTF_Tensor(forward!args));
 }
 
+@trusted
+Tensor tensor(TF_Tensor* t)
+{
+  return createSlimRC!TensorOwner(t);
+}
+
 /// Make a scalar RCTensor.
 @nogc nothrow @safe
 unittest

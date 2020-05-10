@@ -169,6 +169,37 @@ struct GraphOwner
     TF_DeleteGraph(this.ptr);
     TF_DeleteStatus(this.status);
   }
+
+  /// Loads serialized graph (GraphDef proto).
+  @nogc nothrow @trusted
+  void load(const(void)[] proto)
+  {
+    auto buffer = TF_NewBufferFromString(proto.ptr, proto.length);
+    auto opts = TF_NewImportGraphDefOptions;
+    TF_GraphImportGraphDef(this.ptr, buffer, opts, this.status);
+    assertStatus(this.status);
+  }
+
+  /// Returns serialized bytes (GraphDef proto).
+  @nogc nothrow @trusted
+  TF_Buffer* serialize()
+  {
+    auto buffer = TF_NewBuffer;
+    TF_GraphToGraphDef(this.ptr, buffer, this.status);
+    assertStatus(this.status);
+    return buffer;
+  }
+
+  /// Writes serialized bytes (GraphDef proto) to a given file.
+  @nogc nothrow @trusted
+  void write(const(char)* fileName)
+  {
+    import core.stdc.stdio;
+
+    auto buffer = this.serialize();
+    auto fp = fopen(fileName, "wb");
+    fwrite(buffer.data, 1, buffer.length, fp); 
+  }
 }
 
 /// TF_Operation wrapper used in Graph.
@@ -199,6 +230,15 @@ struct Graph
   /// Base reference counted pointer.
   SlimRCPtr!GraphOwner base;
   alias base this;
+  /// Get an operation by name
+
+  @nogc nothrow @trusted
+  Operation operationByName(const(char)* name)
+  {
+    auto opr = TF_GraphOperationByName(this.ptr, name);
+    assert(opr);
+    return Operation(opr, this);
+  }
 
   /// Creates a placeholder in this graph.
   Operation placeholder(T, size_t N)(
@@ -245,7 +285,7 @@ unittest
 {
   import tfd.tensor;
 
-  auto buffer = TF_NewBuffer;
+  TF_Buffer* buffer;
   scope (exit) TF_DeleteBuffer(buffer);
   {
     auto graph = newGraph;
@@ -259,22 +299,16 @@ unittest
       auto add = a + b;
       assert(TF_GraphOperationByName(graph, "add"));
     }
-    // Export to a GraphDef (protobuf)
-    TF_GraphToGraphDef(graph, buffer, graph.status);
-    assertStatus(graph.status);
+    buffer = graph.serialize;
+    // for coverage
+    graph.write("tmp.bin");
   }
-  {
+  with (newGraph) {
     // Import from the GraphDef (protobuf)
-    auto graph = newGraph;
-    auto opts = TF_NewImportGraphDefOptions;
-    TF_GraphImportGraphDef(graph, buffer, opts, graph.status);
-    assertStatus(graph.status);
-
-    auto a = TF_GraphOperationByName(graph, "a");
-    assert(a);
-    auto add = TF_GraphOperationByName(graph, "add");
-    assert(add);
-    const t = TensorOwner(graph.session.run([add], [a: 1.tensor])[0]);
+    load(buffer.data[0 .. buffer.length]);
+    auto a = operationByName("a");
+    auto add = operationByName("add");
+    const t = session.run([add], [a: 1.tensor])[0].tensor;
     assert(t.scalar!int == 1 + 3);
   }
 }

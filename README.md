@@ -28,13 +28,16 @@ with (newGraph)
 }
 ```
 
+And more:
+- [save/load TF graphs between Python and D](example/graph_import)
+
 ## Features
 
 - [x] Setup CI
 - [x] Wrap tensor and session for basic usages (see `tfd.session` unittests).
 - [x] mir.ndslice.Slice `s` <=> tfd.tensor.Tensor `t` integration by `s.tensor`, `t.slicedAs(s)`.
+- [x] [Example](example/graph_import) to save/load TF graphs.
 - [ ] Use [pbd](https://github.com/ShigekiKarita/pbd) to save/load proto files.
-- [ ] Example using C API to save/load TF graphs.
 - [ ] Parse `ops.pbtxt` to generate typed ops bindings.
 - [ ] Rewrite C API example with typed bindings.
 - [ ] Implement autograd, and simple training APIs in D.

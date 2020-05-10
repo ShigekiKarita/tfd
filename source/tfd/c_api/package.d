@@ -7,7 +7,7 @@ version (Windows)
 }
 else version (linux)
 {
-  public import tfd.c_api.linux_;
+  public import tfd.c_api.linux;
 }
 else
 {
