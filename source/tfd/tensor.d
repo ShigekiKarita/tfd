@@ -158,8 +158,8 @@ struct TensorOwner
   import mir.rc.array : RCArray;
 
   /// Base pointer.
-  TF_Tensor* ptr;
-  alias ptr this;
+  TF_Tensor* base;
+  alias base this;
 
   // Not copyable.
   @disable this(this);
@@ -168,7 +168,7 @@ struct TensorOwner
   @nogc nothrow @trusted
   ~this()
   {
-    TF_DeleteTensor(ptr);
+    TF_DeleteTensor(this.base);
   }
 
   /// Return an array storing data.
@@ -176,7 +176,7 @@ struct TensorOwner
   inout(T)[] payload(T)() inout
   {
     assert(tfType!T == this.dataType);
-    auto tp = cast(inout(T)*) TF_TensorData(this.ptr);
+    auto tp = cast(inout(T)*) TF_TensorData(this.base);
     return tp[0 .. this.elementCount];
   }
 
@@ -184,14 +184,14 @@ struct TensorOwner
   @nogc nothrow @trusted
   long elementCount() const
   {
-    return TF_TensorElementCount(this.ptr);
+    return TF_TensorElementCount(this.base);
   }
 
   /// Return the number of dimentions.
   @nogc nothrow @trusted
   int ndim() const
   {
-    return TF_NumDims(this.ptr);
+    return TF_NumDims(this.base);
   }
 
   /// Returns a tensor shape.
@@ -201,7 +201,7 @@ struct TensorOwner
     auto ret = RCArray!long(this.ndim);
     foreach (i; 0 .. this.ndim)
     {
-      ret[i] = TF_Dim(this.ptr, i);
+      ret[i] = TF_Dim(this.base, i);
     }
     return ret;
   }
@@ -210,7 +210,7 @@ struct TensorOwner
   @nogc nothrow @trusted
   TF_DataType dataType() const
   {
-    return TF_TensorType(this.ptr);
+    return TF_TensorType(this.base);
   }
 
   /// Returns a tensor slice as same as a given slice with assertions.
@@ -260,7 +260,7 @@ Tensor tensor(Args ...)(Args args)
   return createSlimRC!TensorOwner(makeTF_Tensor(forward!args));
 }
 
-@trusted
+@nogc nothrow @trusted
 Tensor tensor(TF_Tensor* t)
 {
   return createSlimRC!TensorOwner(t);

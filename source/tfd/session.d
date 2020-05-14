@@ -2,269 +2,195 @@
 module tfd.session;
 
 import tfd.c_api;
+import tfd.graph : Operation;
+import tfd.tensor : Tensor;
 import tfd.testing : assertStatus;
 
 
 /// Wrapper class for TF_Session.
-struct Session 
+struct Session
 {
-private:
-  import std.typecons : Tuple;
-  import std.container.array : Array;
+  import tfd.tensor : Tensor, TensorOwner;
+  import tfd.graph : Operation;
 
-  TF_Session* session_;
-  alias session_ this;
+  /// Raw session data.
+  TF_Session* base;
+  alias base this;
 
-  Array!TF_Output inputs_;
-  Array!(TF_Tensor*) inputValues_;
-  Array!TF_Output outputs_;
-  Array!(TF_Tensor*) outputValues_;
-  Array!(TF_Operation*) targets_;
+  /// Status
+  TF_Status* status;
 
-public:
+  /// Not copyable
+  @disable this(this);
 
   /// Constructs a new session.
   @nogc nothrow @trusted
-  this(scope TF_Graph* graph, scope TF_Status* s, bool useXLA = false)
+  this(scope TF_Graph* graph, bool useXLA = false)
   {
     // TODO(karita): support XLA
     assert(!useXLA, "XLA is not supported yet.");
+    this.status = TF_NewStatus();
     TF_SessionOptions* opts = TF_NewSessionOptions();
     scope (exit) TF_DeleteSessionOptions(opts);
     // TF_EnableXLACompilation(opts, useXLA);
-    this.session_ = TF_NewSession(graph, opts, s);
-    assertStatus(s);
+    this.base = TF_NewSession(graph, opts, this.status);
+    assertStatus(this.status);
   }
 
-  @nogc nothrow @trusted
+   @nogc nothrow @trusted
   ~this()
   {
-    TF_Status* s = TF_NewStatus();
-    this.closeAndDelete(s);
-    assertStatus(s);
-    TF_DeleteStatus(s);
+    this.close();
+    TF_DeleteStatus(this.status);
   }
 
   /// Closes and deletes input/output values explicitly.
   @nogc nothrow @trusted
-  void closeAndDelete(TF_Status* s) 
+  void close()
   {
-    this.inputValues_.clear();
-    this.outputValues_.clear();
-    if (session_ !is null) {
-      TF_CloseSession(session_, s);
-      assertStatus(s);
-      TF_DeleteSession(session_, s);
-      session_ = null;
-    }
-  }
-
-  /// Sets input values.
-  @nogc @trusted
-  void setInputs(TF_Tensor*[TF_Operation*] inputs)
-  {
-    this.inputValues_.clear();
-    this.inputs_.clear();
-    this.inputs_.reserve(inputs.length);
-    this.inputValues_.reserve(inputs.length);
-    foreach (op, tensor; inputs)
+    if (base !is null)
     {
-      this.inputs_ ~= TF_Output(cast(TF_Operation*) op, 0);
-      this.inputValues_ ~= tensor;
+      TF_CloseSession(base, this.status);
+      assertStatus(this.status);
+      TF_DeleteSession(base, this.status);
+      assertStatus(this.status);
+      base = null;
     }
-  }
-
-  /// Sets input values for nothrow @nogc usage.
-  @nogc nothrow @trusted
-  void setInputs(size_t N)(Tuple!(TF_Operation*, TF_Tensor*)[N] inputs...)
-  {
-    this.inputValues_.clear();
-    this.inputs_.clear();
-    this.inputs_.reserve(inputs.length);
-    this.inputValues_.reserve(inputs.length);
-    foreach (opTensor; inputs)
-    {
-      this.inputs_ ~= TF_Output(cast(TF_Operation*) opTensor[0], 0);
-      this.inputValues_ ~= opTensor[1];
-    }
-  }
-
-  /// Sets output values.
-  @nogc nothrow @trusted
-  void setOutputs(size_t N)(TF_Operation*[N] outputs...)
-  {
-    this.outputValues_.clear();
-    this.outputs_.clear();
-    this.outputs_.reserve(N);
-    foreach (op; outputs)
-    {
-      this.outputs_ ~= TF_Output(op, 0);
-    }
-    this.outputValues_.length = N;
   }
 
   /// Runs session to evaluate outputs by given inputs.
   @nogc nothrow @trusted
-  void run(TF_Status* s)
+  void run(Operation[] inputs, Tensor[] inputValues,
+           Operation[] outputs, Tensor[] outputValues,
+           Operation[] targets = [])
   {
-    assert(this.inputs_.length == this.inputValues_.length,
-          "Call setInputs() before run()");
-    scope (exit) this.inputValues_.clear();
-    this.outputValues_.length = this.outputs_.length;
+    import std.container.array : Array;
+    import std.range : empty;
 
-    const inputsPtr = inputs_.empty ? null : &inputs_[0];
-    auto inputValuesPtr =
-        inputValues_.empty ? null : &inputValues_[0];
-
-    const TF_Output* outputsPtr = 
-        outputs_.empty ? null : &outputs_[0];
-    TF_Tensor** outputValuesPtr =
-        outputValues_.empty ? null : &outputValues_[0];
-
-    const targetsPtr = targets_.empty ? null : &targets_[0];
-
-    TF_SessionRun(
-        session_, null, 
-        inputsPtr, inputValuesPtr, cast(int) inputs_.length,
-        outputsPtr, outputValuesPtr, cast(int) outputs_.length, 
-        targetsPtr, cast(int) targets_.length,
-        null, s);
-    assertStatus(s);
-  }
-
-  /// Runs in python-like usage.
-  /// WARNING: you need to free the returned tensors by yourself.
-  TF_Tensor*[N] run(size_t N)(TF_Operation*[N] outputs, TF_Tensor*[TF_Operation*] inputs)
-  {
-    this.setInputs(inputs);
-    this.setOutputs(outputs);
-    auto s = TF_NewStatus();
-    scope (exit) TF_DeleteStatus(s);
-    this.run(s);
-    TF_Tensor*[N] ret;
-    foreach (i; 0 .. N)
-    {
-      ret[i] = this.outputValues_[i];
-    }
-    return ret;
-  }
-
-  import tfd.tensor : Tensor, TensorOwner;
-  import tfd.graph : Operation;
-
-  /// Runs in python-like usage.
-  /// WARNING: you need to free the returned tensors by yourself.
-  Tensor[N] run(size_t N)(Operation[N] outputs, Tensor[Operation] inputs)
-  {
     import mir.rc.slim_ptr : createSlimRC;
 
-    TF_Tensor*[TF_Operation*] rawInputs;
-    foreach (o, t; inputs)
-    {
-      rawInputs[o.ptr] = t.ptr;
-    }
-    this.setInputs(rawInputs);
+    assert(inputs.length == inputValues.length);
+    assert(outputs.length == outputValues.length);
 
-    TF_Operation*[N] rawOutputs;
-    foreach (i, o; outputs)
+    Array!TF_Output baseInputs;
+    baseInputs.reserve(inputs.length);
+    foreach (x; inputs)
     {
-      rawOutputs[i] = o.ptr;
+      baseInputs ~= TF_Output(x.base);
     }
-    this.setOutputs(rawOutputs);
-    auto s = TF_NewStatus();
-    scope (exit) TF_DeleteStatus(s);
-    this.run(s);
+
+    Array!TF_Output baseOutputs;
+    baseInputs.reserve(outputs.length);
+    foreach (x; outputs)
+    {
+      baseOutputs ~= TF_Output(x.base);
+    }
+
+    Array!(TF_Tensor*) baseInputValues;
+    baseInputValues.reserve(inputValues.length);
+    foreach (x; inputValues)
+    {
+      baseInputValues ~= x.base;
+    }
+
+    Array!(TF_Tensor*) baseOutputValues;
+    baseOutputValues.length = outputValues.length;
+
+    Array!(TF_Operation*) baseTargets;
+    baseInputs.reserve(targets.length);
+    foreach (x; targets)
+    {
+      baseTargets ~= x.base;
+    }
+
+    TF_SessionRun(
+        this.base, null,
+        inputs.empty ? null : &baseInputs[0], &baseInputValues[0], cast(int) inputs.length,
+        outputs.empty ? null : &baseOutputs[0], &baseOutputValues[0], cast(int) outputs.length,
+        targets.empty ? null : &baseTargets[0], cast(int) targets.length,
+        null, this.status);
+    assertStatus(this.status);
+
+    foreach (i; 0 .. outputs.length)
+    {
+      outputValues[i] = createSlimRC!TensorOwner(baseOutputValues[i]);
+    }
+  }
+
+  /// Runs in python-like usage.
+  nothrow @trusted
+  Tensor[N] run(size_t N)(Operation[N] outputs, Tensor[Operation] inputs)
+  {
     Tensor[N] ret;
-    foreach (i; 0 .. N)
-    {
-      ret[i] = createSlimRC!TensorOwner(this.outputValues_[i]);
-    }
+    this.run(inputs.keys, inputs.values, outputs[], ret[]);
     return ret;
   }
 
 }
 
-/// CAPI Session test in `tensorflow/c/c_api_test.c`
-unittest
-{
-  import tfd.graph : Add, Placeholder, ScalarConst;
-  import tfd.tensor : makeTF_Tensor;
 
-  TF_Status* s = TF_NewStatus();
-  scope (exit) TF_DeleteStatus(s);
-  TF_Graph* graph = TF_NewGraph();
-  scope (exit) TF_DeleteGraph(graph);
-
-  // Make a placeholder operation.
-  TF_Operation* feed = Placeholder(graph, s);
-  assertStatus(s);
-
-  // Make a constant operation with the scalar "2".
-  TF_Operation* two = ScalarConst(2, graph, s);
-  assertStatus(s);
-
-  // Add operation.
-  TF_Operation* add = Add(feed, two, graph, s);
-  assertStatus(s);
-
-  // Create a session for this graph.
-  auto session = Session(graph, s);
-  assertStatus(s);
-
-  // run the graph.
-  TF_Tensor* feedVal = makeTF_Tensor(3);
-  scope (exit) TF_DeleteTensor(feedVal);
-  TF_Tensor* addVal = session.run([add], [feed: feedVal])[0];
-  scope (exit) TF_DeleteTensor(addVal);
-
-  assert(TF_TensorType(addVal) == TF_INT32);
-  int* addInt = cast(int*) TF_TensorData(addVal);
-  assert(2 + 3 == *addInt);
-}
-
-/// CAPI Session test in `tensorflow/c/c_api_test.c` with @nogc usage.
-@nogc nothrow
+/// nothrow, nogc, and safe usage
+@nogc nothrow @safe
 unittest
 {
   import std.typecons : tuple;
+  import tfd.tensor : tensor, Tensor;
+  import tfd.graph : newGraph, Operation;
 
-  import tfd.graph : Add, Placeholder, ScalarConst;
-  import tfd.tensor : makeTF_Tensor;
+  with (newGraph)
+  {
+    Operation x = placeholder!int("x");
+    Operation two = constant(2);
+    Operation add = x + two;
 
-  TF_Status* s = TF_NewStatus();
-  scope (exit) TF_DeleteStatus(s);
-  TF_Graph* graph = TF_NewGraph();
-  scope (exit) TF_DeleteGraph(graph);
+    Operation[1] inops;
+    inops[0] = x;
+    Tensor[1] inputs;
+    inputs[0] = 3.tensor;
+    Operation[1] outops;
+    outops[0] = add;
+    Tensor[1] outputs;
+    session.run(inops, inputs, outops, outputs);
+    assert(outputs[0].scalar!int == 5);
 
-  // Make a placeholder operation.
-  TF_Operation* feed = Placeholder(graph, s);
-  assertStatus(s);
+    write("tmp.pb");
+  }
+  with (newGraph)
+  {
+    read("tmp.pb");
+    // auto x = operationByName("x");
+    // auto add = operationByName("add");
+  }
+}
 
-  // Make a constant operation with the scalar "2".
-  TF_Operation* two = ScalarConst(2, graph, s);
-  assertStatus(s);
+/// TODO(karita): more interesting example. e.g., logistic regression.
+unittest
+{
+  import tfd;
 
-  // Add operation.
-  TF_Operation* add = Add(feed, two, graph, s);
-  assertStatus(s);
+  /// scalar add
+  with (newGraph)
+  {
+    Operation x = placeholder!int("x");
+    Operation two = constant(2);
+    Operation add = x + two;
 
-  // Create a session for this graph.
-  auto session = Session(graph, s);
-  assertStatus(s);
+    Tensor addVal = session.run([add], [x: 3.tensor])[0];
+    assert(addVal.scalar!int == 5);
+  }
 
-  // run the graph.
-  TF_Tensor* feedVal = makeTF_Tensor(3);
-  scope (exit) TF_DeleteTensor(feedVal);
-  session.setInputs(tuple(feed, feedVal));
-  session.setOutputs(add);
+  /// tensor add
+  with (newGraph)
+  {
+    import mir.ndslice : as, iota;
 
-  session.run(s);
-  assertStatus(s);
-  TF_Tensor* addVal = session.outputValues_[0];
-  scope (exit) TF_DeleteTensor(addVal);
+    auto i = iota(2, 3, 4).as!float;
 
-  assert(addVal !is null);
-  assert(TF_TensorType(addVal) == TF_INT32);
-  int* addInt = cast(int*) TF_TensorData(addVal);
-  assert(2 + 3 == *addInt);
+    Operation x = placeholder!float("x", 2, 3, 4);
+    Operation two = constant(i);
+    Operation add = x + two;
+
+    Tensor addVal = session.run([add], [x: i.tensor])[0];
+    assert(addVal.sliced!(float, 3) == i * 2);
+  }
 }

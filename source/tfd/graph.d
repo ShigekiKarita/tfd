@@ -9,148 +9,6 @@ import tfd.c_api;
 import tfd.testing : assertStatus;
 
 
-/// Creates a new placeholder in a given graph.
-@nogc nothrow @trusted
-TF_Operation* Placeholder(size_t N = 0)(
-    TF_Graph* graph,
-    TF_Status* s,
-    const(char)* name = "feed",
-    TF_DataType dtype = TF_INT32,
-    long[N] dims = (long[N]).init)
-{
-  TF_Operation* op;
-  TF_OperationDescription* desc = TF_NewOperation(graph, "Placeholder", name);
-  TF_SetAttrType(desc, "dtype", dtype);
-  static if (N != 0)
-  {
-    TF_SetAttrShape(desc, "shape", dims.ptr, dims.length);
-  }
-  op = TF_FinishOperation(desc, s);
-  assertStatus(s);
-  assert(op);
-  return op;
-}
-
-
-/++ TODO(karita): use pbd instead of protobuf-c
-alias AttrValue = Tensorflow__AttrValue;
-
-
-/// Gets an AttrValue from a given operation.
-@nogc nothrow @trusted
-bool GetAttrValue(
-    TF_Operation* oper, const(char)* attr_name,
-    AttrValue* attr_value, TF_Status* s)
-{
-  TF_Buffer* buffer = TF_NewBuffer();
-  scope (exit) TF_DeleteBuffer(buffer);
-
-  TF_OperationGetAttrValueProto(oper, attr_name, buffer, s);
-  bool ret = TF_GetCode(s) == TF_OK;
-  if (ret)
-  {
-    auto unpacked = tensorflow__attr_value__unpack(
-        null,
-        buffer.length,
-        cast(const(ubyte)*) buffer.data);
-    ret = (unpacked !is null);
-    if (ret) *attr_value = *unpacked;
-  }
-  return ret;
-}
-+/
-
-/// Creates a const tensor.
-@nogc nothrow @trusted
-TF_Operation* Const(
-    TF_Tensor* t,
-    TF_Graph* graph,
-    TF_Status* s,
-    const(char)* name = "const")
-{
-  TF_Operation* op;
-  TF_OperationDescription* desc = TF_NewOperation(graph, "Const", name);
-  TF_SetAttrTensor(desc, "value", t, s);
-  TF_SetAttrType(desc, "dtype", TF_TensorType(t));
-  op = TF_FinishOperation(desc, s);
-  assertStatus(s);
-  assert(op !is null);
-  return op;
-}
-
-
-/// Creates a scalar const tensor.
-@nogc nothrow @trusted
-TF_Operation* ScalarConst(int v, TF_Graph* graph, TF_Status* s,
-                          const(char)* name = "scalar") 
-{
-  import tfd.tensor : makeTF_Tensor;
-  // TODO(karita): free this tensor
-  return Const(makeTF_Tensor(v), graph, s, name);
-}
-
-
-/// Adds two tensors.
-@nogc nothrow @trusted
-TF_Operation* Add(TF_Operation* l, TF_Operation* r, TF_Graph* graph,
-                  TF_Status* s, const(char)* name = "add") {
-  TF_OperationDescription* desc = TF_NewOperation(graph, "AddN", name);
-  TF_Output[2] inputs;
-  inputs[0] = TF_Output(l, 0);
-  inputs[1] = TF_Output(r, 0);
-  TF_AddInputList(desc, inputs.ptr, 2);
-  TF_Operation* op = TF_FinishOperation(desc, s);
-  assertStatus(s);
-  assert(op !is null);
-  return op;
-}
-
-
-/// CAPI Graph test in `tensorflow/c/c_api_test.c`
-@nogc nothrow
-unittest
-{
-  TF_Status* s = TF_NewStatus();
-  TF_Graph* graph = TF_NewGraph();
-
-  // Make a placeholder operation.
-  TF_Operation* feed = Placeholder(graph, s);
-  assertStatus(s);
-
-  // Test TF_Operation*() query functions.
-  assert(TF_OperationName(feed).fromStringz == "feed");
-  assert(TF_OperationOpType(feed).fromStringz == "Placeholder");
-  assert(TF_OperationDevice(feed).fromStringz == "");
-  assert(TF_OperationNumOutputs(feed) == 1);
-  assert(TF_OperationOutputType(TF_Output(feed, 0)) == TF_INT32);
-  assert(TF_OperationOutputListLength(feed, "output", s) == 1);
-  assertStatus(s);
-  assert(TF_OperationNumInputs(feed) == 0);
-  assert(TF_OperationOutputNumConsumers(TF_Output(feed, 0)) == 0);
-  assert(TF_OperationNumControlInputs(feed) == 0);
-  assert(TF_OperationNumControlOutputs(feed) == 0);
-
-  // TODO(karita): implement AttrValue type switching by `value_case`
-  // AttrValue attrValue;
-  // assert(GetAttrValue(feed, "dtype", &attrValue, s));
-  // assert(attrValue.type == TENSORFLOW__DATA_TYPE__DT_INT32);
-
-  // Test not found errors in TF_Operation*() query functions.
-  assert(TF_OperationOutputListLength(feed, "bogus", s) == -1);
-  assert(TF_GetCode(s) == TF_INVALID_ARGUMENT);
-  // assert(!GetAttrValue(feed, "missing", &attrValue, s));
-  // assert(TF_Message(s).fromStringz ==
-  //        "Operation 'feed' has no attr named 'missing'.");
-
-  // Make a constant oper with the scalar "3".
-  TF_Operation* three = ScalarConst(3, graph, s);
-  assertStatus(s);
-  // Add oper.
-  Add(feed, three, graph, s);
-  assertStatus(s);
-}
-
-
 /// TF_Graph freed by dtor (RAII) with convinient methods.
 struct GraphOwner
 {
@@ -172,16 +30,17 @@ struct GraphOwner
 
   /// Loads serialized graph (GraphDef proto).
   @nogc nothrow @trusted
-  void load(const(void)[] proto)
+  void deserialize(const(void)[] proto)
   {
     auto buffer = TF_NewBufferFromString(proto.ptr, proto.length);
+    scope (exit) TF_DeleteBuffer(buffer);
     auto opts = TF_NewImportGraphDefOptions;
     TF_GraphImportGraphDef(this.ptr, buffer, opts, this.status);
     assertStatus(this.status);
   }
 
   /// Returns serialized bytes (GraphDef proto).
-  @nogc nothrow @trusted
+  @nogc nothrow @system
   TF_Buffer* serialize()
   {
     auto buffer = TF_NewBuffer;
@@ -190,15 +49,43 @@ struct GraphOwner
     return buffer;
   }
 
+  // Reads serialized bytes (GraphDef proto) from file.
+  @nogc nothrow @trusted
+  void read(const(char)* fileName, size_t block = 1024)
+  {
+    import core.stdc.stdio : feof, fopen, fread;
+    import core.stdc.stdlib : free, realloc;
+    
+    size_t len;
+    void* buffer = realloc(null, block);
+    assert(buffer, "realloc failed");
+    scope (exit) free(buffer);
+
+    void* ptr = realloc(null, block);
+    assert(ptr, "realloc failed");
+    scope (exit) free(ptr);
+
+    auto fp = fopen(fileName, "rb");
+    while (!feof(fp))
+    {
+       auto inc = fread(ptr, 1, block, fp);
+       len += inc;
+       ptr = realloc(ptr, len + block);
+       assert(ptr, "realloc failed");
+    }
+    this.deserialize(ptr[0 .. len]);
+  }
+
   /// Writes serialized bytes (GraphDef proto) to a given file.
   @nogc nothrow @trusted
   void write(const(char)* fileName)
   {
-    import core.stdc.stdio;
+    import core.stdc.stdio : fopen, fwrite;
 
     auto buffer = this.serialize();
+    scope (exit) TF_DeleteBuffer(buffer);
     auto fp = fopen(fileName, "wb");
-    fwrite(buffer.data, 1, buffer.length, fp); 
+    fwrite(buffer.data, 1, buffer.length, fp);
   }
 }
 
@@ -206,17 +93,26 @@ struct GraphOwner
 struct Operation
 {
   /// Raw pointer.
-  TF_Operation* ptr;
+  TF_Operation* base;
   /// Graph scope containing this operation.
   Graph graph;
-  alias ptr this;
+  alias base this;
 
   /// Binary operator for +.
-  Operation opBinary(string op : "+")(Operation rhs)
+  Operation opBinary(string op : "+")(Operation rhs) @trusted
   {
     assert(this.graph == rhs.graph);
     scope (exit) assertStatus(this.graph.status);
-    return Operation(Add(this.ptr, rhs.ptr, this.graph.ptr, this.graph.status), this.graph);
+
+    TF_OperationDescription* desc = TF_NewOperation(this.graph, "AddN", "add");
+    TF_Output[2] inputs;
+    inputs[0] = TF_Output(this.base, 0);
+    inputs[1] = TF_Output(rhs.base, 0);
+    TF_AddInputList(desc, inputs.ptr, 2);
+    TF_Operation* op = TF_FinishOperation(desc, this.graph.status);
+    assertStatus(this.graph.status);
+    assert(op !is null);
+    return Operation(op, this.graph);
   }
 
 }
@@ -233,7 +129,14 @@ struct Graph
   /// Get an operation by name
 
   @nogc nothrow @trusted
-  Operation operationByName(const(char)* name)
+  bool hasOperationByName(const(char)* name)
+  {
+    auto opr = TF_GraphOperationByName(this.ptr, name);
+    return opr !is null;
+  }
+  
+  @nogc nothrow @trusted
+  Operation getOperationByName(const(char)* name)
   {
     auto opr = TF_GraphOperationByName(this.ptr, name);
     assert(opr);
@@ -241,12 +144,21 @@ struct Graph
   }
 
   /// Creates a placeholder in this graph.
+  @trusted
   Operation placeholder(T, size_t N)(
       const(char)* name,
       long[N] dims...)
   {
-    scope (exit) assertStatus(this.status);
-    return Operation(Placeholder!N(this.ptr, this.status, name, tfType!T, dims), this);
+    TF_OperationDescription* desc = TF_NewOperation(this.ptr, "Placeholder", name);
+    TF_SetAttrType(desc, "dtype", tfType!T);
+    static if (N != 0)
+    {
+      TF_SetAttrShape(desc, "shape", dims.ptr, dims.length);
+    }
+    TF_Operation* op = TF_FinishOperation(desc, this.status);
+    assertStatus(this.status);
+    assert(op);
+    return Operation(op, this);
   }
 
   /// ditto.
@@ -256,19 +168,28 @@ struct Graph
   }
 
   /// Creates a constant in this graph.
+  @trusted
   Operation constant(S)(S x, const(char)* name = "const")
   {
     import tfd.tensor : makeTF_Tensor;
-    scope (exit) assertStatus(this.status);
-    // TODO(karita) free TF_Tensor when this class is freed
-    return Operation(Const(x.makeTF_Tensor, this.ptr, this.status, name), this);
+
+    // TODO(karita) free TF_Tensor when op is freed?
+    auto t = x.makeTF_Tensor;
+    TF_OperationDescription* desc = TF_NewOperation(this.ptr, "Const", name);
+    TF_SetAttrTensor(desc, "value", t, this.status);
+    assertStatus(this.status);
+    TF_SetAttrType(desc, "dtype", TF_TensorType(t));
+    TF_Operation* op = TF_FinishOperation(desc, this.status);
+    assertStatus(this.status);
+    assert(op !is null);
+    return Operation(op, this);
   }
 
   /// Creates a Session in this graph.
-  @nogc nothrow
+  @nogc nothrow @trusted
   Session session()
   {
-    return Session(this.ptr, this.status);
+    return Session(this.ptr);
   }
 }
 
@@ -281,6 +202,7 @@ Graph newGraph()
 }
 
 /// Export/import graph.
+nothrow
 unittest
 {
   import tfd.tensor;
@@ -305,9 +227,9 @@ unittest
   }
   with (newGraph) {
     // Import from the GraphDef (protobuf)
-    load(buffer.data[0 .. buffer.length]);
-    auto a = operationByName("a");
-    auto add = operationByName("add");
+    deserialize(buffer.data[0 .. buffer.length]);
+    auto a = getOperationByName("a");
+    auto add = getOperationByName("add");
     const t = session.run([add], [a: 1.tensor])[0].tensor;
     assert(t.scalar!int == 1 + 3);
   }
