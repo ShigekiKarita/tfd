@@ -51,6 +51,7 @@ And more:
 - [ ] Rewrite C API example with typed bindings.
 - [ ] Implement autograd, and simple training APIs in D.
 - [ ] Support cloud TPU.
+- [ ] Support dip1000.
 
 ## Requirements
 
