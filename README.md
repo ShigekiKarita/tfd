@@ -5,6 +5,13 @@
 [![codecov](https://codecov.io/gh/ShigekiKarita/tfd/branch/master/graph/badge.svg)](https://codecov.io/gh/ShigekiKarita/tfd)
 [![Dub version](https://img.shields.io/dub/v/tfd.svg)](https://code.dlang.org/packages/tfd)
 
+## Installation
+
+- If your project needs only TF C API bindings: `$ dub add tfd:deimos`
+- If your project needs entire tfd packages: `$ dub add tfd`
+
+see also [Requirements](#requirements)
+
 ## Example
 
 [Mir](https://github.com/libmir) is to **tfd** what [NumPy](https://numpy.org) is to [Tensorflow](https://www.tensorflow.org).
@@ -33,6 +40,7 @@ And more:
 
 ## Features
 
+- [x] dpp generated [C API bindings](deimos/tfd)
 - [x] Support `@nogc nothrow`.
 - [x] Setup CI
 - [x] Wrap tensor and session for basic usages (see `tfd.session` unittests).
