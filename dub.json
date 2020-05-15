@@ -6,8 +6,39 @@
   "description": "TF for D",
   "license": "BSL-1.0",
   "name": "tfd",
-  "libs": ["tensorflow"],
+  "targetType": "none",
   "dependencies": {
-    "mir-algorithm": "~>3.7.28"
-  }
+    "tfd:core": "*"
+  },
+  "subPackages": [
+    {
+      "name": "deimos",
+      "sourcePaths": ["deimos"],
+      "importPaths": ["deimos"]
+    },
+    {
+      "name": "core",
+      "targetType": "library",
+      "sourcePaths": ["core/source"],
+      "importPaths": ["core/source"],
+      "dependencies": {
+	"mir-algorithm": "~>3.7.28",
+	"tfd:deimos": "*"
+      },
+      "buildTypes": {
+        "unittest": {
+	  "libs": ["tensorflow"],
+          "buildOptions": ["unittests", "debugMode", "debugInfo"],
+          "versions": ["tfd_test"],
+          "dflags": ["-preview=dip1008"]
+        },
+        "unittest-cov": {
+	  "libs": ["tensorflow"],
+          "buildOptions": ["unittests", "coverage", "debugMode", "debugInfo"],
+          "versions": ["tfd_test"],
+          "dflags": ["-preview=dip1008"]
+        }
+      }
+    }
+  ]
 }

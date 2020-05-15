@@ -3,7 +3,8 @@
 {
   "dependencies": {
      "tfd": {"path": "../.."}
-  }
+  },
+  "libs": ["tensorflow"]
 }
 +/
 import tfd : newGraph;

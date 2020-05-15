@@ -126,6 +126,8 @@ TF_Tensor* makeTF_Tensor(Iterator, size_t N, SliceKind kind)(Slice!(Iterator, N,
 }
 
 ///
+version (tfd_test)
+@nogc nothrow
 unittest
 {
   import mir.ndslice : iota, universal;
@@ -143,6 +145,7 @@ TF_Tensor* makeTF_Tensor(T)(T scalar) if (isScalarType!T)
 }
 
 ///
+version (tfd_test)
 @nogc nothrow
 unittest
 {
@@ -267,6 +270,7 @@ Tensor tensor(TF_Tensor* t)
 }
 
 /// Make a scalar RCTensor.
+version (tfd_test)
 @nogc nothrow @safe
 unittest
 {
@@ -290,6 +294,7 @@ unittest
 }
 
 /// Make an empty multi-dim RCTensor.
+version (tfd_test)
 @nogc nothrow @safe
 unittest
 {
@@ -303,6 +308,7 @@ unittest
 }
 
 /// Make a Tensor from iota slice.
+version (tfd_test)
 @nogc nothrow @safe
 unittest
 {

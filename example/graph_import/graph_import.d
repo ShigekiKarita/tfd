@@ -4,6 +4,7 @@
   "dependencies": {
      "tfd": {"path": "../.."}
   },
+  "libs": ["tensorflow"],
   "dflags": ["-J=."]
 }
 +/

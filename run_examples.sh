@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 echo "=== Running D examples ==="
 
 for f in  \

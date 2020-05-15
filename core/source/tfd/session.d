@@ -130,6 +130,7 @@ struct Session
 
 
 /// nothrow, nogc, and safe usage
+version (tfd_test)
 @nogc nothrow @safe
 unittest
 {
@@ -164,6 +165,7 @@ unittest
 }
 
 /// TODO(karita): more interesting example. e.g., logistic regression.
+version (tfd_test)
 unittest
 {
   import tfd;

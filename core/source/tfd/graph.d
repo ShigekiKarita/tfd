@@ -202,6 +202,7 @@ Graph newGraph()
 }
 
 /// Export/import graph.
+version (tfd_test)
 nothrow
 unittest
 {
