@@ -33,6 +33,7 @@ And more:
 
 ## Features
 
+- [x] Support `@nogc nothrow`.
 - [x] Setup CI
 - [x] Wrap tensor and session for basic usages (see `tfd.session` unittests).
 - [x] mir.ndslice.Slice `s` <=> tfd.tensor.Tensor `t` integration by `s.tensor`, `t.slicedAs(s)`.

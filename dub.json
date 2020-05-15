@@ -1,13 +1,13 @@
 {
-    "authors": [
-        "Shigeki Karita"
-    ],
-    "copyright": "Copyright © 2020, Shigeki Karita",
-    "description": "TF for D",
-    "license": "BSL-1.0",
-    "name": "tfd",
-    "libs": ["tensorflow"],
-    "dependencies": {
-        "mir-algorithm": "~>3.7.28"
-    }
+  "authors": [
+    "Shigeki Karita"
+  ],
+  "copyright": "Copyright © 2020, Shigeki Karita",
+  "description": "TF for D",
+  "license": "BSL-1.0",
+  "name": "tfd",
+  "libs": ["tensorflow"],
+  "dependencies": {
+    "mir-algorithm": "~>3.7.28"
+  }
 }

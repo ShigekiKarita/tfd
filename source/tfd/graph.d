@@ -95,11 +95,11 @@ struct Operation
   /// Raw pointer.
   TF_Operation* base;
   /// Graph scope containing this operation.
-  Graph graph;
+  SlimRCPtr!GraphOwner graph;
   alias base this;
 
   /// Binary operator for +.
-  Operation opBinary(string op : "+")(Operation rhs) @trusted
+  @trusted  Operation opBinary(string op : "+")(Operation rhs)
   {
     assert(this.graph == rhs.graph);
     scope (exit) assertStatus(this.graph.status);
@@ -147,7 +147,7 @@ struct Graph
   @trusted
   Operation placeholder(T, size_t N)(
       const(char)* name,
-      long[N] dims...)
+      long[N] dims...) scope return
   {
     TF_OperationDescription* desc = TF_NewOperation(this.ptr, "Placeholder", name);
     TF_SetAttrType(desc, "dtype", tfType!T);
@@ -158,7 +158,7 @@ struct Graph
     TF_Operation* op = TF_FinishOperation(desc, this.status);
     assertStatus(this.status);
     assert(op);
-    return Operation(op, this);
+    return Operation(op, this.base);
   }
 
   /// ditto.

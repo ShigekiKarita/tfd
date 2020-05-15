@@ -36,7 +36,19 @@ jobs:
         LIBRARY_PATH=`pwd`/download/lib
         LD_LIBRARY_PATH=`pwd`/download/lib
         dub test --parallel -b=unittest-cov
+        ./run_examples.sh
 
+    - uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+        architecture: 'x64'
+    - name: test-python
+      run: |
+        pip install tensorflow
+        cd example/graph_import
+        python graph_import.py
+        python graph_export.py
+        
     - name: codecov
       if: ${{ matrix.compiler == 'dmd' }}
       run: bash <(curl -s https://codecov.io/bash)

@@ -19,6 +19,8 @@ tensorflow/
 download/
 .vscode/
 
+*.a
+*~
 *.so
 *.so.*
 *.pb
