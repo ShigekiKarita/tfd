@@ -2,7 +2,6 @@
 module tfd.session;
 
 import tfd.c_api;
-import tfd.graph : Operation;
 import tfd.tensor : Tensor;
 import tfd.testing : assertStatus;
 
@@ -11,7 +10,7 @@ import tfd.testing : assertStatus;
 struct Session
 {
   import tfd.tensor : Tensor, TensorOwner;
-  import tfd.graph : Operation;
+  import tfd.op : Operation;
 
   /// Raw session data.
   TF_Session* base;
@@ -136,7 +135,8 @@ unittest
 {
   import std.typecons : tuple;
   import tfd.tensor : tensor, Tensor;
-  import tfd.graph : newGraph, Operation;
+  import tfd.graph : newGraph;
+  import tfd.op : Operation;
 
   with (newGraph)
   {
