@@ -114,7 +114,7 @@ struct Graph
   {
     auto opr = TF_GraphOperationByName(this.ptr, name);
     assert(opr);
-    return Operation(opr, this);
+    return Operation(TF_Output(opr, 0), this);
   }
 
   /// Creates a placeholder in this graph.
@@ -132,7 +132,7 @@ struct Graph
     TF_Operation* op = TF_FinishOperation(desc, this.status);
     assertStatus(this.status);
     assert(op);
-    return Operation(op, this.base);
+    return Operation(TF_Output(op, 0), this.base);
   }
 
   /// ditto.
@@ -156,7 +156,7 @@ struct Graph
     TF_Operation* op = TF_FinishOperation(desc, this.status);
     assertStatus(this.status);
     assert(op !is null);
-    return Operation(op, this);
+    return Operation(TF_Output(op, 0), this);
   }
 
   /// Creates a Session in this graph.

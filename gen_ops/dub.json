@@ -1,0 +1,9 @@
+{
+  "name": "gen_ops",
+  "targetType": "executable",
+  "dflags": ["-J=tensorflow"],
+  "mainSourceFile": "app.d",
+  "dependencies": {
+    "pegged": "~>0.4.4"
+  }
+}

@@ -75,14 +75,14 @@ struct Session
     baseInputs.reserve(inputs.length);
     foreach (x; inputs)
     {
-      baseInputs ~= TF_Output(x.base);
+      baseInputs ~= x.base;
     }
 
     Array!TF_Output baseOutputs;
     baseInputs.reserve(outputs.length);
     foreach (x; outputs)
     {
-      baseOutputs ~= TF_Output(x.base);
+      baseOutputs ~= x.base;
     }
 
     Array!(TF_Tensor*) baseInputValues;
@@ -99,7 +99,7 @@ struct Session
     baseInputs.reserve(targets.length);
     foreach (x; targets)
     {
-      baseTargets ~= x.base;
+      baseTargets ~= x.base.oper;
     }
 
     TF_SessionRun(
