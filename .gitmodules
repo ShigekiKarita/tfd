@@ -1,3 +1,6 @@
 [submodule "tensorflow"]
 	path = tensorflow
 	url = https://github.com/tensorflow/tensorflow
+[submodule "proto/protobuf-d"]
+	path = proto/protobuf-d
+	url = git@github.com:ShigekiKarita/protobuf-d

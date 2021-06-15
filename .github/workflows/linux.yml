@@ -14,7 +14,9 @@ jobs:
         compiler: [dmd, ldc, dmd-beta, ldc-beta]
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
 
     - uses: actions/cache@v1
       with:
@@ -54,7 +56,7 @@ jobs:
         LIBRARY_PATH=`pwd`/download/lib
         LD_LIBRARY_PATH=`pwd`/download/lib
         ./run_examples.sh
-        
+
     - name: codecov
       if: ${{ matrix.compiler == 'dmd' }}
       run: bash <(curl -s https://codecov.io/bash)

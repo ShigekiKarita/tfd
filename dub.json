@@ -6,10 +6,11 @@
   "description": "TF for D",
   "license": "BSL-1.0",
   "name": "tfd",
-  "subPackages": ["deimos", "gen_ops"],
+  "subPackages": ["deimos", "gen_ops", "proto"],
   "dependencies": {
     "mir-algorithm": "~>3.7.28",
-    "tfd:deimos": "*"
+    "tfd:deimos": "*",
+    "tfd:proto": "*"
   },
   "buildTypes": {
     "unittest": {

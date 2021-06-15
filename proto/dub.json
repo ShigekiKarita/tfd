@@ -1,0 +1,7 @@
+{
+  "name": "proto",
+  "targetType": "library",
+  "dependencies": {
+    "protobuf": { "path": "protobuf-d" }
+  }
+}

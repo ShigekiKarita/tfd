@@ -25,9 +25,9 @@ tfd-test-*
 *.lst
 *-library
 generated/
-tensorflow/
 download/
 .vscode/
+venv/
 
 *.a
 *~
